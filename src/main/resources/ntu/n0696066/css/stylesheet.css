@@ -1,12 +1,12 @@
 .button_SignIn {
-    -fx-background-color: #094270;
+    -fx-background-color:#094270;
     -fx-background-radius: 5;
     -fx-text-fill: #ffffff;
 }
 
 .button_SignUp {
     -fx-text-fill: #094270;
-    -fx-background-color: #adc0cf;
+    -fx-background-color: #ADC0CF;
     -fx-background-radius: 5;
     -fx-border-color: #094270;
     -fx-border-radius: 5;
@@ -15,10 +15,12 @@
 .VBox_Root {
     -fx-background-color: #ffffff;
     -fx-background-radius: 5;
+    -fx-border-radius: 5;
 }
 
-.jfx-text-field {
-    -jfx-focus-color: #ED0362;
+.jfx-text-field, .jfx-password-field {
+    -fx-text-inner-color:  #094270;
+    -fx-prompt-text-fill: #094270;
 }
 
 .tab *.tab-label {

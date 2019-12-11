@@ -1,12 +1,13 @@
 package ntu.n0696066;
 
+import animatefx.animation.FadeIn;
+import animatefx.animation.ZoomIn;
 import javafx.application.Application;
 import javafx.fxml.FXMLLoader;
 import javafx.scene.Parent;
 import javafx.scene.Scene;
 import javafx.stage.Stage;
-import okhttp3.OkHttpClient;
-import okhttp3.RequestBody;
+import javafx.stage.StageStyle;
 
 import java.io.IOException;
 
@@ -19,8 +20,11 @@ public class App extends Application {
 
     @Override
     public void start(Stage stage) throws IOException {
-        scene = new Scene(loadFXML("main"));
+
+        scene = new Scene(loadFXML("LoginScreen"));
+        stage.initStyle(StageStyle.UNDECORATED);
         stage.setScene(scene);
+        new FadeIn(scene.getRoot()).play();
         stage.show();
 
     }
