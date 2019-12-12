@@ -1,15 +1,15 @@
 .button_SignIn {
     -fx-background-color:#094270;
-    -fx-background-radius: 5;
+    -fx-background-radius: 20;
     -fx-text-fill: #ffffff;
 }
 
 .button_SignUp {
     -fx-text-fill: #094270;
     -fx-background-color: #ADC0CF;
-    -fx-background-radius: 5;
+    -fx-background-radius: 20;
     -fx-border-color: #094270;
-    -fx-border-radius: 5;
+    -fx-border-radius: 20;
 }
 
 .VBox_Root {

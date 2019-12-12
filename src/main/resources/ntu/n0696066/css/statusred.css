@@ -1,0 +1,10 @@
+.text-area {
+    -fx-border-color: red;
+    -fx-border-radius: 10;
+    -fx-background-radius: 10;
+    -fx-text-fill: red;
+}
+
+.text-area .content {
+    -fx-background-color: #FFAAAA;
+}
