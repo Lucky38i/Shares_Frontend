@@ -110,6 +110,7 @@ public class LoginController {
                     String node = new ObjectMapper().writeValueAsString(tempUser);
                     RequestBody body = RequestBody.create(node, MediaType.parse("application/json; charset=utf-8"));
 
+                    // Build POST call
                     Request request = new Request.Builder()
                             .url(BASE_URL + "/auth/register")
                             .post(body)
