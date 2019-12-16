@@ -18,6 +18,7 @@ import javafx.scene.layout.StackPane;
 import javafx.stage.Stage;
 import javafx.util.Duration;
 import ntu.n0696066.model.User;
+import ntu.n0696066.tools.DialogHandler;
 import okhttp3.*;
 
 import java.io.IOException;
@@ -96,90 +97,103 @@ public class LoginController {
         paneRegister.toFront();
     }
 
-
     @FXML
     private void RegisterUser()  {
-        User tempUser = new User(txtRegisterUsername.getText(), txtRegisterPassword.getText());
-        spin_Loading.setVisible(true);
+        // Check password field complies with model rules
+        if (txtRegisterPassword.getLength() < 6) {
+            txtRegisterPassword.setText("");
+            DialogHandler.handleInfo(txtRegisterInfo,
+                    "../css/statusred.css",
+                    "password requires at least 6 characters",
+                    3);
+        }
+        else {
+            User tempUser = new User(txtRegisterUsername.getText(), txtRegisterPassword.getText());
+            spin_Loading.setVisible(true);
 
-        // Delegate Rest Call to a separate thread
-        Task<Void> task = new Task<Void>() {
-            @Override
-            protected Void call() {
-                try {
-                    String node = new ObjectMapper().writeValueAsString(tempUser);
-                    RequestBody body = RequestBody.create(node, MediaType.parse("application/json; charset=utf-8"));
+            // Delegate Rest Call to a separate thread
+            Task<Void> task = new Task<Void>() {
+                @Override
+                protected Void call() {
+                    try {
+                        String node = new ObjectMapper().writeValueAsString(tempUser);
+                        RequestBody body = RequestBody.create(node, MediaType.parse("application/json; charset=utf-8"));
 
-                    // Build POST call
-                    Request request = new Request.Builder()
-                            .url(BASE_URL + "/auth/register")
-                            .post(body)
-                            .build();
-                    Call call = client.newCall(request);
-                    Response response = call.execute();
-                    JsonNode responseNode = new ObjectMapper().readTree(
-                            Objects.requireNonNull(response.body()).string());
+                        // Build POST call
+                        Request request = new Request.Builder()
+                                .url(BASE_URL + "/auth/register")
+                                .post(body)
+                                .build();
+                        Call call = client.newCall(request);
+                        Response response = call.execute();
+                        JsonNode responseNode = new ObjectMapper().readTree(
+                                Objects.requireNonNull(response.body()).string());
 
-                    Platform.runLater(() -> {
-                        // Inform user successful user registration and return to login screen
-                        if (responseNode.get("success").booleanValue()){
-                            txtRegisterInfo.getStylesheets().clear();
-                            txtRegisterInfo.getStylesheets().add(String.valueOf(
-                                    LoginController.class.getResource("../css/statusgreen.css")));
-                            txtRegisterInfo.setText(responseNode.get("message").textValue());
+                        Platform.runLater(() -> {
+                            // Inform user successful user registration and return to login screen
+                            if (responseNode.get("success").booleanValue()) {
+                                txtRegisterInfo.getStylesheets().clear();
+                                txtRegisterInfo.getStylesheets().add(String.valueOf(
+                                        LoginController.class.getResource("../css/statusgreen.css")));
+                                txtRegisterInfo.setText(responseNode.get("message").textValue());
 
-                            FadeIn tempFade = new FadeIn(txtRegisterInfo);
-                            tempFade.setOnFinished(enterEvent -> {
-                                txtRegisterUsername.setText("");
-                                txtRegisterPassword.setText("");
+                                FadeIn tempFade = new FadeIn(txtRegisterInfo);
+                                tempFade.setOnFinished(enterEvent -> {
+                                    txtRegisterUsername.setText("");
+                                    txtRegisterPassword.setText("");
 
-                                ZoomOut tempAnimation = new ZoomOut(paneRegister);
-                                tempAnimation.setOnFinished(exitEvent -> {
-                                    paneLogin.toFront();
-                                    txtRegisterInfo.setMaxHeight(0);
+                                    ZoomOut tempAnimation = new ZoomOut(paneRegister);
+                                    tempAnimation.setOnFinished(exitEvent -> {
+                                        paneLogin.toFront();
+                                        txtRegisterInfo.setMaxHeight(0);
+                                    });
+                                    tempAnimation.setDelay(Duration.seconds(2));
+                                    tempAnimation.play();
                                 });
-                                tempAnimation.setDelay(Duration.seconds(2));
-                                tempAnimation.play();
-                            });
-                            tempFade.play();
-                            txtRegisterInfo.setMaxHeight(txtRegisterInfo.getPrefHeight());
-                        }
-                        // Inform failure to register user and print message from RESTful WS
-                        else  {
-                            txtRegisterInfo.getStylesheets().clear();
-                            txtRegisterInfo.getStylesheets().add(String.valueOf(
-                                    LoginController.class.getResource("../css/statusred.css")));
-                            txtRegisterInfo.setText(responseNode.get("message").textValue());
-                            new FadeIn(txtRegisterInfo).play();
-                            txtRegisterInfo.setMaxHeight(txtRegisterInfo.getPrefHeight());
-                        }
+                                tempFade.play();
+                                txtRegisterInfo.setMaxHeight(txtRegisterInfo.getPrefHeight());
+                            }
+                            // Inform failure to register user and print message from RESTful WS
+                            else {
+                                DialogHandler.handleInfo(txtLoginInfo,
+                                        "../css/statusred.css",
+                                        responseNode.get("message").textValue(),
+                                        3);
+                            }
                             spin_Loading.setVisible(false);
-                    });
-                } catch (IOException e) {
-                    // Inform user that server is down
-                    Platform.runLater(()-> {
-                        txtRegisterInfo.getStylesheets().clear();
-                        txtRegisterInfo.getStylesheets().add(String.valueOf(
-                                LoginController.class.getResource("../css/statusred.css")));
-                        txtRegisterInfo.setText("Server down, try again later");
-
-                        new FadeIn(txtRegisterInfo).play();
-                        txtRegisterInfo.setMaxHeight(txtRegisterInfo.getPrefHeight());
-                        txtRegisterUsername.setText("");
-                        txtRegisterPassword.setText("");
-                        spin_Loading.setVisible(false);
-                    });
-                    e.printStackTrace();
+                        });
+                    } catch (IOException e) {
+                        // Inform user that server is down
+                        Platform.runLater(() -> {
+                            DialogHandler.handleInfo(txtRegisterInfo,
+                                    "../css/statusred.css",
+                                    "Server down, try again later",
+                                    3);
+                            txtRegisterUsername.setText("");
+                            txtRegisterPassword.setText("");
+                            spin_Loading.setVisible(false);
+                        });
+                    }
+                    return null;
                 }
-                return null;
-            }
-        };
-        Thread thread = new Thread(task);
-        thread.setDaemon(true);
-        thread.start();
+            };
+            Thread thread = new Thread(task);
+            thread.setDaemon(true);
+            thread.start();
+        }
     }
 
     @FXML
     private void LoginUser() {
+        // Check password field complies with model rules
+        if (txtPassword.getLength() < 6) {
+            txtPassword.setText("");
+            DialogHandler.handleInfo(txtLoginInfo,
+                    "../css/statusred.css",
+                    "password requires at least 6 characters",
+                    3);
+        } else {
+            User tempUser = new User(txtUsername.getText(), txtPassword.getText());
+        }
     }
 }
