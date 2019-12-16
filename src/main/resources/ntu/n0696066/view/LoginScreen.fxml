@@ -17,7 +17,7 @@
 <?import javafx.scene.text.Font?>
 <?import javafx.scene.text.Text?>
 
-<StackPane fx:id="stackRoot" maxHeight="-Infinity" maxWidth="-Infinity" minHeight="-Infinity" minWidth="-Infinity" prefHeight="500.0" prefWidth="300.0" styleClass="VBox_Root" stylesheets="@../css/stylesheet.css" xmlns="http://javafx.com/javafx/11.0.1" xmlns:fx="http://javafx.com/fxml/1" fx:controller="ntu.n0696066.controllers.LoginController">
+<StackPane fx:id="stackRoot" maxHeight="-Infinity" maxWidth="-Infinity" minHeight="-Infinity" minWidth="-Infinity" prefHeight="500.0" prefWidth="300.0" styleClass="VBox_Root" stylesheets="@../css/stylesheet.css" xmlns="http://javafx.com/javafx/8.0.171" xmlns:fx="http://javafx.com/fxml/1" fx:controller="ntu.n0696066.controllers.LoginController">
    <children>
       <VBox alignment="CENTER" prefHeight="200.0" prefWidth="100.0">
          <children>
@@ -47,12 +47,12 @@
                         <Image url="@../icons/stocks_icon.png" />
                      </image>
                   </ImageView>
-                  <Text fill="#ed0362" strokeType="OUTSIDE" strokeWidth="0.0" text="SBS">
+                  <Text cache="true" cacheHint="SPEED" fill="#ed0362" strokeType="OUTSIDE" strokeWidth="0.0" text="SBS">
                      <font>
                         <Font name="System Bold" size="24.0" />
                      </font>
                   </Text>
-                  <Text fill="#094270" strokeType="OUTSIDE" strokeWidth="0.0" text="Shares Brokerage System">
+                  <Text cache="true" cacheHint="SPEED" fill="#094270" strokeType="OUTSIDE" strokeWidth="0.0" text="Shares Brokerage System">
                      <font>
                         <Font name="System Bold Italic" size="15.0" />
                      </font>
@@ -77,7 +77,7 @@
                                     <Insets top="20.0" />
                                  </VBox.margin>
                               </HBox>
-                              <TextArea fx:id="txtRegisterInfo" editable="false" maxHeight="0.0" minHeight="0.0" prefHeight="27.0" prefWidth="230.0" stylesheets="@../css/statusred.css" text="To be filled">
+                              <TextArea fx:id="txtRegisterInfo" cache="true" cacheHint="SPEED" editable="false" maxHeight="0.0" minHeight="0.0" prefHeight="27.0" prefWidth="230.0" stylesheets="@../css/statusred.css" text="To be filled">
                                  <VBox.margin>
                                     <Insets left="35.0" right="35.0" />
                                  </VBox.margin>
@@ -85,7 +85,7 @@
                                     <Font name="System Bold" size="12.0" />
                                  </font>
                               </TextArea>
-                              <JFXTextField fx:id="txtRegisterUsername" focusColor="#094270" promptText="Username" styleClass="jfx-text-field" stylesheets="@../css/stylesheet.css" unFocusColor="#ed0362">
+                              <JFXTextField fx:id="txtRegisterUsername" cache="true" cacheHint="SPEED" focusColor="#094270" promptText="Username" styleClass="jfx-text-field" stylesheets="@../css/stylesheet.css" unFocusColor="#ed0362">
                                  <VBox.margin>
                                     <Insets bottom="20.0" left="20.0" right="20.0" top="10.0" />
                                  </VBox.margin>
@@ -93,7 +93,7 @@
                                     <Insets left="15.0" right="15.0" />
                                  </padding>
                               </JFXTextField>
-                              <JFXPasswordField fx:id="txtRegisterPassword" accessibleText="hello" focusColor="#094270" promptText="Password" styleClass="jfx-password-field" stylesheets="@../css/stylesheet.css" unFocusColor="#ed0362">
+                              <JFXPasswordField fx:id="txtRegisterPassword" accessibleText="hello" cache="true" cacheHint="SPEED" focusColor="#094270" promptText="Password" styleClass="jfx-password-field" stylesheets="@../css/stylesheet.css" unFocusColor="#ed0362">
                                  <VBox.margin>
                                     <Insets bottom="70.0" left="20.0" right="20.0" />
                                  </VBox.margin>
@@ -106,8 +106,8 @@
                               </JFXPasswordField>
                               <HBox alignment="CENTER" spacing="5.0">
                                  <children>
-                                    <JFXButton fx:id="btnReturn" buttonType="RAISED" onAction="#ReturnToLogin" prefHeight="40.0" prefWidth="110.0" styleClass="button_SignUp" stylesheets="@../css/stylesheet.css" text="Back" HBox.hgrow="ALWAYS" />
-                                    <JFXButton fx:id="btnRegister" buttonType="RAISED" onAction="#RegisterUser" prefHeight="40.0" prefWidth="110.0" styleClass="button_SignIn" stylesheets="@../css/stylesheet.css" text="Register!" HBox.hgrow="ALWAYS" />
+                                    <JFXButton fx:id="btnReturn" buttonType="RAISED" cache="true" cacheHint="SPEED" onAction="#ReturnToLogin" prefHeight="40.0" prefWidth="110.0" styleClass="button_SignUp" stylesheets="@../css/stylesheet.css" text="Back" HBox.hgrow="ALWAYS" />
+                                    <JFXButton fx:id="btnRegister" buttonType="RAISED" cache="true" cacheHint="SPEED" onAction="#RegisterUser" prefHeight="40.0" prefWidth="110.0" styleClass="button_SignIn" stylesheets="@../css/stylesheet.css" text="Register!" HBox.hgrow="ALWAYS" />
                                  </children>
                                  <VBox.margin>
                                     <Insets left="5.0" right="5.0" />
@@ -139,7 +139,7 @@
                                     <Insets top="30.0" />
                                  </VBox.margin>
                               </HBox>
-                              <TextArea fx:id="txtLoginInfo" editable="false" focusTraversable="false" maxHeight="0.0" minHeight="0.0" minWidth="-Infinity" prefHeight="27.0" prefWidth="230.0" stylesheets="@../css/statusred.css" text="To be filled">
+                              <TextArea fx:id="txtLoginInfo" cache="true" cacheHint="SPEED" editable="false" focusTraversable="false" maxHeight="0.0" minHeight="0.0" minWidth="-Infinity" prefHeight="27.0" prefWidth="230.0" stylesheets="@../css/statusred.css" text="To be filled">
                                  <font>
                                     <Font name="System Bold" size="12.0" />
                                  </font>
@@ -147,7 +147,7 @@
                                     <Insets left="35.0" right="35.0" />
                                  </VBox.margin>
                               </TextArea>
-                              <JFXTextField fx:id="txtUsername" focusColor="#094270" promptText="Username" styleClass="jfx-text-field" stylesheets="@../css/stylesheet.css" unFocusColor="#ed0362">
+                              <JFXTextField fx:id="txtUsername" cache="true" cacheHint="SPEED" focusColor="#094270" promptText="Username" styleClass="jfx-text-field" stylesheets="@../css/stylesheet.css" unFocusColor="#ed0362">
                                  <VBox.margin>
                                     <Insets bottom="15.0" left="20.0" right="20.0" />
                                  </VBox.margin>
@@ -155,7 +155,7 @@
                                     <Insets left="15.0" right="15.0" />
                                  </padding>
                               </JFXTextField>
-                              <JFXPasswordField fx:id="txtPassword" accessibleText="hello" focusColor="#094270" promptText="Password" styleClass="jfx-password-field" stylesheets="@../css/stylesheet.css" unFocusColor="#ed0362">
+                              <JFXPasswordField fx:id="txtPassword" accessibleText="hello" cache="true" cacheHint="SPEED" focusColor="#094270" promptText="Password" styleClass="jfx-password-field" stylesheets="@../css/stylesheet.css" unFocusColor="#ed0362">
                                  <VBox.margin>
                                     <Insets left="20.0" right="20.0" />
                                  </VBox.margin>
