@@ -1,33 +1,37 @@
 package ntu.n0696066.model;
 
-public class Shares {
-    private String companyName;
-    private String companySymbol;
-    private long ownedShares;
+import com.jfoenix.controls.datamodels.treetable.RecursiveTreeObject;
+import javafx.beans.property.LongProperty;
+import javafx.beans.property.StringProperty;
+
+public class Shares extends RecursiveTreeObject<Shares> {
+    private StringProperty companyName;
+    private StringProperty companySymbol;
+    private LongProperty ownedShares;
 
     private SharePrice sharePrice;
 
-    public String getCompanyName() {
+    public StringProperty getCompanyName() {
         return companyName;
     }
 
-    public void setCompanyName(String companyName) {
+    public void setCompanyName(StringProperty companyName) {
         this.companyName = companyName;
     }
 
-    public String getCompanySymbol() {
+    public StringProperty getCompanySymbol() {
         return companySymbol;
     }
 
-    public void setCompanySymbol(String companySymbol) {
+    public void setCompanySymbol(StringProperty companySymbol) {
         this.companySymbol = companySymbol;
     }
 
-    public long getOwnedShares() {
+    public LongProperty getOwnedShares() {
         return ownedShares;
     }
 
-    public void setOwnedShares(long sharesAmount) {
+    public void setOwnedShares(LongProperty sharesAmount) {
         this.ownedShares = sharesAmount;
     }
 
