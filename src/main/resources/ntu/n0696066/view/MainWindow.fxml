@@ -4,6 +4,7 @@
 <?import com.jfoenix.controls.JFXProgressBar?>
 <?import com.jfoenix.controls.JFXTabPane?>
 <?import com.jfoenix.controls.JFXTreeTableView?>
+<?import de.jensd.fx.glyphs.fontawesome.FontAwesomeIconView?>
 <?import javafx.geometry.Insets?>
 <?import javafx.scene.control.Separator?>
 <?import javafx.scene.control.Tab?>
@@ -36,6 +37,7 @@
                   </Text>
                   <Separator prefWidth="200.0" visible="false" />
                   <JFXComboBox fx:id="cmb_SearchShare" editable="true" prefWidth="200.0" promptText="Search Shares" styleClass="jfx-text-field" stylesheets="@../css/stylesheet.css" />
+                  <FontAwesomeIconView fill="#ed0362" glyphName="SEARCH" onMouseClicked="#findShares" size="14" />
                </children>
             </HBox>
             <JFXTabPane side="LEFT" stylesheets="@../css/stylesheet.css" VBox.vgrow="ALWAYS">

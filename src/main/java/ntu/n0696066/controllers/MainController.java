@@ -62,66 +62,6 @@ public class MainController {
         clm_ShareValue.setCellValueFactory(param -> param.getValue().getValue().getSharePrice().getValue().asObject());
         clm_LastUpdate.setCellValueFactory(param -> param.getValue().getValue().getSharePrice().getLastUpdate());
 
-        JFXAutoCompletePopup<String> autoCompletePopup = new JFXAutoCompletePopup<>();
-
-        autoCompletePopup.setSelectionHandler(event -> cmb_SearchShare.setValue(event.getObject()));
-
-        TextField editor = cmb_SearchShare.getEditor();
-        editor.textProperty().addListener(observable -> {
-
-            if (editor.getLength() >= 3) {
-
-            }
-
-            autoCompletePopup.filter(item -> item.toLowerCase().contains(editor.getText()));
-
-            if (autoCompletePopup.getFilteredSuggestions().isEmpty() || cmb_SearchShare.showingProperty().get()) {
-                autoCompletePopup.hide();
-            }
-            else {
-                autoCompletePopup.show(editor);
-            }
-        });
-        cmb_SearchShare.getEditor().textProperty().addListener((observable, oldValue, newValue) -> {
-            if (newValue.length() >= 3) {
-                progressBar_Loading.setVisible(true);
-                // Build GET call
-                Task<Void> task = new Task<Void>() {
-                    @Override
-                    protected Void call() {
-                        Request request = new Request.Builder()
-                                .url(BASE_URL + "/shares/liststock?sharesymbol=" + newValue)
-                                .addHeader("Authorization", "Bearer " + accessToken)
-                                .build();
-                        Call call = client.newCall(request);
-
-                        try (Response response = call.execute()){
-                            JsonNode responseNode = new ObjectMapper().readTree(
-                                    Objects.requireNonNull(response.body()).string());
-
-                            Platform.runLater(() -> {
-                                progressBar_Loading.setVisible(false);
-                                cmb_SearchShare.getItems().clear();
-                                for (int i = 0; i < responseNode.path("bestMatches").size(); i++) {
-                                    cmb_SearchShare.getItems().add(
-                                            responseNode.path("bestMatches").get(i).get("1. symbol").textValue()
-                                                    + "\t\t"
-                                                    +  responseNode.path("bestMatches").get(i).get("2. name").textValue()
-                                            );
-                                }
-                                cmb_SearchShare.show();
-                            });
-                        } catch (IOException e) {
-                            e.printStackTrace();
-                        }
-                        return null;
-                    }
-                };
-                Thread thread = new Thread(task);
-                thread.setDaemon(true);
-                thread.start();
-            }
-        });
     }
 
     public void setUpScene(String token) {
@@ -159,5 +99,47 @@ public class MainController {
         Thread thread = new Thread(task);
         thread.setDaemon(true);
         thread.start();
+    }
+
+    @FXML
+    private void findShares() {
+        if (cmb_SearchShare.getEditor().getLength() >= 3) {
+            progressBar_Loading.setVisible(true);
+            // Build GET call
+            Task<Void> task = new Task<Void>() {
+                @Override
+                protected Void call() {
+                    Request request = new Request.Builder()
+                            .url(BASE_URL + "/shares/liststock?sharesymbol=" + cmb_SearchShare.getEditor().getText())
+                            .addHeader("Authorization", "Bearer " + accessToken)
+                            .build();
+                    Call call = client.newCall(request);
+
+                    try (Response response = call.execute()){
+                        JsonNode responseNode = new ObjectMapper().readTree(
+                                Objects.requireNonNull(response.body()).string());
+
+                        Platform.runLater(() -> {
+                            progressBar_Loading.setVisible(false);
+                            cmb_SearchShare.getItems().clear();
+                            for (int i = 0; i < responseNode.path("bestMatches").size(); i++) {
+                                cmb_SearchShare.getItems().add(
+                                        responseNode.path("bestMatches").get(i).get("1. symbol").textValue()
+                                                + " - "
+                                                +  responseNode.path("bestMatches").get(i).get("2. name").textValue()
+                                );
+                            }
+                            cmb_SearchShare.show();
+                        });
+                    } catch (IOException e) {
+                        e.printStackTrace();
+                    }
+                    return null;
+                }
+            };
+            Thread thread = new Thread(task);
+            thread.setDaemon(true);
+            thread.start();
+        }
     }
 }
