@@ -83,3 +83,7 @@
     -fx-text-fill: #094270;
     -fx-background-color: #ADC0CF;
 }
+
+.jfx-progress-bar > .bar {
+    -fx-background-color: #ED0362;
+}
