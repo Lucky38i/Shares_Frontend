@@ -1,19 +1,15 @@
 package ntu.n0696066.model;
 
-import java.util.HashSet;
-import java.util.Set;
+import javafx.collections.FXCollections;
+import javafx.collections.ObservableList;
+import javafx.collections.ObservableSet;
 
 public class User {
     private String username;
-    private String password;
 
-    private final Set<Shares> ownedShares = new HashSet<>();
+    private final ObservableList<Shares> ownedShares = FXCollections.observableArrayList();
 
-    public User(String username, String password) {
-        this.username = username;
-        this.password = password;
-    }
-
+    public User() {}
 
     public String getUsername() {
         return username;
@@ -23,15 +19,7 @@ public class User {
         this.username = userName;
     }
 
-    public String getPassword() {
-        return password;
-    }
-
-    public void setPassword(String role) {
-        this.password = role;
-    }
-
-    public Set<Shares> getOwnedShares() {
+    public ObservableList<Shares> getOwnedShares() {
         return ownedShares;
     }
 }

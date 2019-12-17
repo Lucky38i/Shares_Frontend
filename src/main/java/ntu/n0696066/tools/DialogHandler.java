@@ -9,10 +9,10 @@ public class DialogHandler {
 
     /**
      * //TODO
-     * @param infoDialog
-     * @param stylesheet
-     * @param message
-     * @param fadeOutDelayInSecs
+     * @param infoDialog The TextArea to act as a dialog
+     * @param stylesheet The designated .css file to style the TextArea
+     * @param message The message for the TextArea to contain
+     * @param fadeOutDelayInSecs The delay for which to play the Fade Out animation
      */
     public static void handleInfo(TextArea infoDialog, String stylesheet, String message, Integer fadeOutDelayInSecs) {
         infoDialog.getStylesheets().clear();
