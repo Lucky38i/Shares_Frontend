@@ -121,6 +121,7 @@
                                                             <Font name="Roboto Bold" size="30.0" />
                                                          </font>
                                                       </Text>
+                                                      <JFXComboBox prefHeight="25.0" prefWidth="37.0" promptText="\$" />
                                                    </children>
                                                 </HBox>
                                                 <Text fx:id="lbl_ShareUpdate" strokeType="OUTSIDE" strokeWidth="0.0" text="Today">
@@ -129,19 +130,39 @@
                                                    </font>
                                                 </Text>
                                                 <Separator maxHeight="-Infinity" maxWidth="-Infinity" orientation="VERTICAL" prefHeight="100.0" visible="false" VBox.vgrow="ALWAYS" />
-                                                <Text fx:id="lbl_CompanyName1" strokeType="OUTSIDE" strokeWidth="0.0" text="Shares" wrappingWidth="89.99999463558197">
-                                                   <font>
-                                                      <Font name="Roboto Regular" size="12.0" />
-                                                   </font>
-                                                </Text>
-                                                <Text fx:id="lbl_OwnedShares" strokeType="OUTSIDE" strokeWidth="0.0" text="Owned Shares" wrappingWidth="89.99999463558197">
-                                                   <font>
-                                                      <Font name="Roboto Bold" size="12.0" />
-                                                   </font>
-                                                   <VBox.margin>
-                                                      <Insets bottom="30.0" />
-                                                   </VBox.margin>
-                                                </Text>
+                                                <HBox alignment="CENTER" prefWidth="200.0">
+                                                   <children>
+                                                      <Text fx:id="lbl_CompanyName1" strokeType="OUTSIDE" strokeWidth="0.0" text="Shares" wrappingWidth="89.99999463558197">
+                                                         <font>
+                                                            <Font name="Roboto Regular" size="12.0" />
+                                                         </font>
+                                                      </Text>
+                                                      <Separator prefWidth="200.0" visible="false" />
+                                                      <Text fx:id="lbl_CompanyName11" strokeType="OUTSIDE" strokeWidth="0.0" text="Equity" wrappingWidth="89.99999463558197">
+                                                         <font>
+                                                            <Font name="Roboto Regular" size="12.0" />
+                                                         </font>
+                                                      </Text>
+                                                   </children>
+                                                </HBox>
+                                                <HBox alignment="CENTER" prefWidth="200.0">
+                                                   <children>
+                                                      <Text fx:id="lbl_OwnedShares" strokeType="OUTSIDE" strokeWidth="0.0" text="Owned Shares" wrappingWidth="89.99999463558197">
+                                                         <font>
+                                                            <Font name="Roboto Bold" size="12.0" />
+                                                         </font>
+                                                      </Text>
+                                                      <Separator prefWidth="200.0" visible="false" />
+                                                      <Text fx:id="lbl_OwnedShares1" strokeType="OUTSIDE" strokeWidth="0.0" text="Current Equity" wrappingWidth="89.99999463558197">
+                                                         <font>
+                                                            <Font name="Roboto Bold" size="12.0" />
+                                                         </font>
+                                                      </Text>
+                                                   </children>
+                                                   <padding>
+                                                      <Insets bottom="20.0" />
+                                                   </padding>
+                                                </HBox>
                                                 <HBox alignment="CENTER" maxHeight="-Infinity" minHeight="-Infinity" prefHeight="40.0" prefWidth="200.0" spacing="50.0">
                                                    <children>
                                                       <JFXButton prefHeight="40.0" prefWidth="153.0" styleClass="button_SignUp" stylesheets="@../css/stylesheet.css" text="Sell" />
