@@ -273,6 +273,7 @@ public class LoginController {
                                         window.show();
                                     });
                                     tempFade.play();
+                                    window.close();
 
                                 } catch (IOException e) {
                                     e.printStackTrace();

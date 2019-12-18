@@ -1,5 +1,6 @@
 <?xml version="1.0" encoding="UTF-8"?>
 
+<?import com.jfoenix.controls.JFXButton?>
 <?import com.jfoenix.controls.JFXComboBox?>
 <?import com.jfoenix.controls.JFXProgressBar?>
 <?import com.jfoenix.controls.JFXTabPane?>
@@ -14,12 +15,13 @@
 <?import javafx.scene.image.ImageView?>
 <?import javafx.scene.layout.AnchorPane?>
 <?import javafx.scene.layout.HBox?>
+<?import javafx.scene.layout.Pane?>
 <?import javafx.scene.layout.StackPane?>
 <?import javafx.scene.layout.VBox?>
 <?import javafx.scene.text.Font?>
 <?import javafx.scene.text.Text?>
 
-<StackPane maxHeight="-Infinity" maxWidth="-Infinity" minHeight="-Infinity" minWidth="-Infinity" prefHeight="400.0" prefWidth="850.0" stylesheets="@../css/stylesheet.css" xmlns="http://javafx.com/javafx/8.0.171" xmlns:fx="http://javafx.com/fxml/1" fx:controller="ntu.n0696066.controllers.MainController">
+<StackPane maxHeight="-Infinity" maxWidth="-Infinity" minHeight="-Infinity" minWidth="-Infinity" prefHeight="400.0" prefWidth="673.0" stylesheets="@../css/stylesheet.css" xmlns="http://javafx.com/javafx/8.0.171" xmlns:fx="http://javafx.com/fxml/1" fx:controller="ntu.n0696066.controllers.MainController">
    <children>
       <VBox alignment="CENTER" prefHeight="200.0" prefWidth="100.0" spacing="5.0">
          <children>
@@ -38,7 +40,7 @@
                         <Font name="System Bold Italic" size="20.0" />
                      </font>
                   </Text>
-                  <Separator prefWidth="200.0" visible="false" />
+                  <Separator prefWidth="135.0" visible="false" />
                   <JFXComboBox fx:id="cmb_SearchShare" editable="true" prefWidth="200.0" promptText="Search Shares" styleClass="jfx-text-field" stylesheets="@../css/stylesheet.css" />
                   <FontAwesomeIconView fill="#ed0362" glyphName="SEARCH" onMouseClicked="#searchShares" size="14" />
                </children>
@@ -47,28 +49,20 @@
                <tabs>
                   <Tab text="Dashboard">
                     <content>
-                      <AnchorPane minHeight="0.0" minWidth="0.0" prefHeight="180.0" prefWidth="200.0">
+                      <AnchorPane minHeight="0.0" minWidth="0.0" prefHeight="180.0" prefWidth="415.0">
                            <children>
-                              <VBox alignment="CENTER_RIGHT" prefHeight="306.0" prefWidth="749.0" spacing="5.0">
+                              <VBox alignment="CENTER_RIGHT" prefHeight="306.0" prefWidth="573.0" spacing="5.0">
                                  <children>
                                     <Text strokeType="OUTSIDE" strokeWidth="0.0" text="Welcome">
                                        <font>
                                           <Font name="Roboto Italic" size="16.0" />
                                        </font>
                                     </Text>
-                                    <JFXTreeTableView fx:id="treeTblView_Dashboard" prefHeight="272.0" prefWidth="705.0" stylesheets="@../css/stylesheet.css">
+                                    <JFXTreeTableView fx:id="treeTblView_Dashboard" prefHeight="272.0" prefWidth="477.0" stylesheets="@../css/stylesheet.css">
                                        <columns>
                                           <TreeTableColumn fx:id="clm_CompanyName" prefWidth="75.0" text="Company Name" />
                                           <TreeTableColumn fx:id="clm_CompanySymbol" prefWidth="75.0" text="Company Symbol" />
                                           <TreeTableColumn fx:id="clm_OwnedShares" prefWidth="75.0" text="Owned Shares" />
-                                          <TreeTableColumn fx:id="clm_Shares" prefWidth="369.0" text="Shares">
-                                             <columns>
-                                                <TreeTableColumn fx:id="clm_ShareCurrency" prefWidth="75.0" text="Currency" />
-                                                <TreeTableColumn fx:id="clm_ShareValue" prefWidth="75.0" text="Value" />
-                                                <TreeTableColumn fx:id="clm_CurrentShare" prefWidth="75.0" text="Current Shares" />
-                                                <TreeTableColumn fx:id="clm_LastUpdate" prefWidth="75.0" text="Last Update" />
-                                             </columns>
-                                          </TreeTableColumn>
                                        </columns>
                                        <columnResizePolicy>
                                           <TreeTableView fx:constant="CONSTRAINED_RESIZE_POLICY" />
@@ -82,9 +76,88 @@
                         </AnchorPane>
                     </content>
                   </Tab>
-                  <Tab text="Stock Options">
+                  <Tab text="Stocks">
                     <content>
-                      <AnchorPane minHeight="0.0" minWidth="0.0" prefHeight="180.0" prefWidth="200.0" />
+                      <AnchorPane minHeight="0.0" minWidth="0.0" prefHeight="180.0" prefWidth="200.0">
+                           <children>
+                              <StackPane prefHeight="306.0" prefWidth="572.0">
+                                 <children>
+                                    <Pane fx:id="pane_SelectItem" styleClass="VBox_Root" stylesheets="@../css/stylesheet.css">
+                                       <children>
+                                          <VBox alignment="CENTER" prefHeight="306.0" prefWidth="573.0">
+                                             <children>
+                                                <Text fx:id="lbl_CompanyName2" strokeType="OUTSIDE" strokeWidth="0.0" text="Please select a Stock Item from the dashboard" wrappingWidth="520.999994635582">
+                                                   <font>
+                                                      <Font name="Roboto Bold" size="22.0" />
+                                                   </font>
+                                                </Text>
+                                             </children>
+                                          </VBox>
+                                       </children>
+                                    </Pane>
+                                    <Pane fx:id="pane_StockDetails" styleClass="VBox_Root" stylesheets="@../css/stylesheet.css">
+                                       <children>
+                                          <VBox alignment="CENTER_LEFT" maxHeight="-Infinity" maxWidth="-Infinity" prefHeight="306.0" prefWidth="571.0">
+                                             <children>
+                                                <Text fx:id="lbl_CompanySymbol" strokeType="OUTSIDE" strokeWidth="0.0" text="ABC" wrappingWidth="111.0703125">
+                                                   <font>
+                                                      <Font name="Roboto Bold" size="12.0" />
+                                                   </font>
+                                                </Text>
+                                                <Text fx:id="lbl_CompanyName" strokeType="OUTSIDE" strokeWidth="0.0" text="ABC Company" wrappingWidth="290.99999463558197">
+                                                   <font>
+                                                      <Font name="Roboto Bold" size="30.0" />
+                                                   </font>
+                                                </Text>
+                                                <HBox alignment="CENTER_LEFT" prefWidth="200.0">
+                                                   <children>
+                                                      <Text fx:id="lbl_ShareCurrency" strokeType="OUTSIDE" strokeWidth="0.0" text="\$" wrappingWidth="30.99999463558197">
+                                                         <font>
+                                                            <Font name="Roboto Bold" size="30.0" />
+                                                         </font>
+                                                      </Text>
+                                                      <Text fx:id="lbl_ShareValue" strokeType="OUTSIDE" strokeWidth="0.0" text="Text" wrappingWidth="169.99999463558197">
+                                                         <font>
+                                                            <Font name="Roboto Bold" size="30.0" />
+                                                         </font>
+                                                      </Text>
+                                                   </children>
+                                                </HBox>
+                                                <Text fx:id="lbl_ShareUpdate" strokeType="OUTSIDE" strokeWidth="0.0" text="Today">
+                                                   <font>
+                                                      <Font name="Roboto Bold" size="12.0" />
+                                                   </font>
+                                                </Text>
+                                                <Separator maxHeight="-Infinity" maxWidth="-Infinity" orientation="VERTICAL" prefHeight="100.0" visible="false" VBox.vgrow="ALWAYS" />
+                                                <Text fx:id="lbl_CompanyName1" strokeType="OUTSIDE" strokeWidth="0.0" text="Shares" wrappingWidth="89.99999463558197">
+                                                   <font>
+                                                      <Font name="Roboto Regular" size="12.0" />
+                                                   </font>
+                                                </Text>
+                                                <Text fx:id="lbl_OwnedShares" strokeType="OUTSIDE" strokeWidth="0.0" text="Owned Shares" wrappingWidth="89.99999463558197">
+                                                   <font>
+                                                      <Font name="Roboto Bold" size="12.0" />
+                                                   </font>
+                                                   <VBox.margin>
+                                                      <Insets bottom="30.0" />
+                                                   </VBox.margin>
+                                                </Text>
+                                                <HBox alignment="CENTER" maxHeight="-Infinity" minHeight="-Infinity" prefHeight="40.0" prefWidth="200.0" spacing="50.0">
+                                                   <children>
+                                                      <JFXButton prefHeight="40.0" prefWidth="153.0" styleClass="button_SignUp" stylesheets="@../css/stylesheet.css" text="Sell" />
+                                                      <JFXButton fx:id="btnUpdate" prefHeight="40.0" prefWidth="153.0" styleClass="button_SignIn" stylesheets="@../css/stylesheet.css" text="Buy" />
+                                                   </children>
+                                                </HBox>
+                                             </children>
+                                             <padding>
+                                                <Insets bottom="10.0" left="10.0" top="10.0" />
+                                             </padding>
+                                          </VBox>
+                                       </children>
+                                    </Pane>
+                                 </children>
+                              </StackPane>
+                           </children></AnchorPane>
                     </content>
                   </Tab>
                   <Tab text="Settings">
