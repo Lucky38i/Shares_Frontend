@@ -7,6 +7,8 @@ import javafx.beans.property.ObjectProperty;
 import javafx.beans.property.StringProperty;
 
 import java.time.LocalDate;
+import java.util.ArrayList;
+import java.util.List;
 
 public class SharePrice {
 
@@ -14,6 +16,8 @@ public class SharePrice {
     private FloatProperty value;
     private LongProperty currentShares;
     private ObjectProperty<LocalDate> lastUpdate;
+
+    private final List<Shares> userShares = new ArrayList<>();
 
     public SharePrice(){}
 

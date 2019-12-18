@@ -55,7 +55,7 @@ public class MainController {
         clm_CompanySymbol.setCellValueFactory(param -> param.getValue().getValue().getCompanySymbol());
         clm_OwnedShares.setCellValueFactory(param -> param.getValue().getValue().getOwnedShares().asObject());
 
-        // Setup Shareprice Column
+        // Setup Share Price Column
         clm_ShareCurrency.setCellValueFactory(param -> param.getValue().getValue().getSharePrice().getCurrency());
         clm_CurrentShare.setCellValueFactory(param -> param.getValue().getValue()
                 .getSharePrice().getCurrentShares().asObject());
@@ -101,8 +101,53 @@ public class MainController {
         thread.start();
     }
 
+    /**
+     * Used to edit a newly request stock item after searching. User can then set the amount of shares they want to
+     * buy and in what currency.
+     */
     @FXML
-    private void findShares() {
+    private void editNewStock() {
+        String shareSymbol = cmb_SearchShare.getValue().split("-")[1];
+        progressBar_Loading.setVisible(true);
+        Task<Void> task = new Task<Void>() {
+            @Override
+            protected Void call() throws Exception {
+                Request request = new Request.Builder()
+                        .url(BASE_URL + "/shares/retrievestock?sharesymbol=" + shareSymbol)
+                        .addHeader("Authorization", "Bearer " + accessToken)
+                        .build();
+                Call call = client.newCall(request);
+                try(Response response = call.execute()) {
+                    if (response.code() == 408) {
+                        //TODO create dialog for this
+                        System.out.println("Request Timeout");
+
+                    } else if (response.code() == 406) {
+                        //TODO create dialog for this
+                        System.out.println("Malformed Share Symbol");
+                    }
+                    else if (response.code() == 200) {
+                        Shares tempShare = new ObjectMapper().readValue(
+                                Objects.requireNonNull(response.body()).string(),
+                                Shares.class);
+
+                    }
+                }
+                return null;
+            }
+        };
+        Thread thread = new Thread(task);
+        thread.setDaemon(true);
+        thread.start();
+
+    }
+
+    /**
+     * Used to search share symbol based on on context in the search bar.
+     * Eg. "Amazon" Retrieves a list of stocks with amazon in the company name
+     */
+    @FXML
+    private void searchShares() {
         if (cmb_SearchShare.getEditor().getLength() >= 3) {
             progressBar_Loading.setVisible(true);
             // Build GET call

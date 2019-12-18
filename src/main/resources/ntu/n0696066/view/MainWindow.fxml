@@ -19,7 +19,7 @@
 <?import javafx.scene.text.Font?>
 <?import javafx.scene.text.Text?>
 
-<StackPane maxHeight="-Infinity" maxWidth="-Infinity" minHeight="-Infinity" minWidth="-Infinity" prefHeight="400.0" prefWidth="800.0" stylesheets="@../css/stylesheet.css" xmlns="http://javafx.com/javafx/8.0.171" xmlns:fx="http://javafx.com/fxml/1" fx:controller="ntu.n0696066.controllers.MainController">
+<StackPane maxHeight="-Infinity" maxWidth="-Infinity" minHeight="-Infinity" minWidth="-Infinity" prefHeight="400.0" prefWidth="850.0" stylesheets="@../css/stylesheet.css" xmlns="http://javafx.com/javafx/8.0.171" xmlns:fx="http://javafx.com/fxml/1" fx:controller="ntu.n0696066.controllers.MainController">
    <children>
       <VBox alignment="CENTER" prefHeight="200.0" prefWidth="100.0" spacing="5.0">
          <children>
@@ -29,6 +29,9 @@
                      <image>
                         <Image url="@../icons/stocks_icon.png" />
                      </image>
+                     <HBox.margin>
+                        <Insets left="23.0" />
+                     </HBox.margin>
                   </ImageView>
                   <Text fill="#ed0362" strokeType="OUTSIDE" strokeWidth="0.0" text="SBS">
                      <font>
@@ -37,7 +40,7 @@
                   </Text>
                   <Separator prefWidth="200.0" visible="false" />
                   <JFXComboBox fx:id="cmb_SearchShare" editable="true" prefWidth="200.0" promptText="Search Shares" styleClass="jfx-text-field" stylesheets="@../css/stylesheet.css" />
-                  <FontAwesomeIconView fill="#ed0362" glyphName="SEARCH" onMouseClicked="#findShares" size="14" />
+                  <FontAwesomeIconView fill="#ed0362" glyphName="SEARCH" onMouseClicked="#searchShares" size="14" />
                </children>
             </HBox>
             <JFXTabPane side="LEFT" stylesheets="@../css/stylesheet.css" VBox.vgrow="ALWAYS">
@@ -46,14 +49,14 @@
                     <content>
                       <AnchorPane minHeight="0.0" minWidth="0.0" prefHeight="180.0" prefWidth="200.0">
                            <children>
-                              <VBox alignment="CENTER_RIGHT" prefHeight="306.0" prefWidth="699.0" spacing="5.0">
+                              <VBox alignment="CENTER_RIGHT" prefHeight="306.0" prefWidth="749.0" spacing="5.0">
                                  <children>
                                     <Text strokeType="OUTSIDE" strokeWidth="0.0" text="Welcome">
                                        <font>
                                           <Font name="Roboto Italic" size="16.0" />
                                        </font>
                                     </Text>
-                                    <JFXTreeTableView fx:id="treeTblView_Dashboard" prefHeight="292.0" prefWidth="649.0" stylesheets="@../css/stylesheet.css">
+                                    <JFXTreeTableView fx:id="treeTblView_Dashboard" prefHeight="272.0" prefWidth="705.0" stylesheets="@../css/stylesheet.css">
                                        <columns>
                                           <TreeTableColumn fx:id="clm_CompanyName" prefWidth="75.0" text="Company Name" />
                                           <TreeTableColumn fx:id="clm_CompanySymbol" prefWidth="75.0" text="Company Symbol" />
@@ -79,7 +82,7 @@
                         </AnchorPane>
                     </content>
                   </Tab>
-                  <Tab text="Search">
+                  <Tab text="Stock Options">
                     <content>
                       <AnchorPane minHeight="0.0" minWidth="0.0" prefHeight="180.0" prefWidth="200.0" />
                     </content>
@@ -91,7 +94,7 @@
                   </Tab>
                </tabs>
             </JFXTabPane>
-            <HBox alignment="CENTER_LEFT" prefHeight="27.0" prefWidth="800.0">
+            <HBox alignment="CENTER_LEFT" prefHeight="27.0" prefWidth="800.0" stylesheets="@../css/stylesheet.css">
                <children>
                   <JFXProgressBar fx:id="progressBar_Loading" prefWidth="90.0" visible="false" />
                </children>
