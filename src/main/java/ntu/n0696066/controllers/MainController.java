@@ -5,12 +5,15 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.node.ObjectNode;
 import com.jfoenix.controls.*;
 import com.jfoenix.controls.datamodels.treetable.RecursiveTreeObject;
+import de.jensd.fx.glyphs.fontawesome.FontAwesomeIconView;
 import javafx.application.Platform;
 import javafx.concurrent.Task;
 import javafx.fxml.FXML;
 import javafx.scene.control.TextField;
 import javafx.scene.control.TreeItem;
 import javafx.scene.control.TreeTableColumn;
+import javafx.scene.layout.Pane;
+import javafx.scene.text.Text;
 import ntu.n0696066.model.Shares;
 import ntu.n0696066.model.User;
 import okhttp3.*;
@@ -26,17 +29,25 @@ import java.util.logging.Logger;
 public class MainController {
 
     @FXML
+    private Pane pane_PurchaseShares, pane_SelectItem, pane_StockDetails, pane_SellShares;
+    @FXML
+    private Text lbl_CompanySymbol, lbl_CompanyName, lbl_ShareCurrency, lbl_ShareValue, lbl_ShareUpdate,
+            lbl_OwnedShares, lbl_Equity, lbl_Buy_CompanySym, lbl_Sell_CompanySym;
+    @FXML
+    private JFXButton btn_GotoSell, btn_GotoBuy, btn_Buy_Confirm, btn_Sell_Confirm;
+    @FXML
+    private JFXComboBox<String> cmb_Sell_Currency, cmb_Buy_Currency;
+    @FXML
+    private JFXTextField txt_Sell_SharePrice, txt_Sell_SharesLeft, txt_Sell_NumofShares, txt_Buy_SharePrice,
+            txt_Buy_Equity, txt_Buy_NumofShare;
+    @FXML
     private JFXProgressBar progressBar_Loading;
     @FXML
     private JFXComboBox<String> cmb_SearchShare;
     @FXML
-    private TreeTableColumn<Shares, String> clm_CompanyName,  clm_CompanySymbol, clm_ShareCurrency;
+    private TreeTableColumn<Shares, String> clm_CompanyName,  clm_CompanySymbol;
     @FXML
-    private TreeTableColumn<Shares, Long> clm_OwnedShares, clm_CurrentShare;
-    @FXML
-    private TreeTableColumn<Shares, Float> clm_ShareValue;
-    @FXML
-    private TreeTableColumn<Shares, LocalDate> clm_LastUpdate;
+    private TreeTableColumn<Shares, Long> clm_OwnedShares;
     @FXML
     private JFXTreeTableView<Shares> treeTblView_Dashboard;
 
@@ -54,16 +65,12 @@ public class MainController {
         clm_CompanyName.setCellValueFactory(param -> param.getValue().getValue().getCompanyName());
         clm_CompanySymbol.setCellValueFactory(param -> param.getValue().getValue().getCompanySymbol());
         clm_OwnedShares.setCellValueFactory(param -> param.getValue().getValue().getOwnedShares().asObject());
-
-        // Setup Share Price Column
-        clm_ShareCurrency.setCellValueFactory(param -> param.getValue().getValue().getSharePrice().getCurrency());
-        clm_CurrentShare.setCellValueFactory(param -> param.getValue().getValue()
-                .getSharePrice().getCurrentShares().asObject());
-        clm_ShareValue.setCellValueFactory(param -> param.getValue().getValue().getSharePrice().getValue().asObject());
-        clm_LastUpdate.setCellValueFactory(param -> param.getValue().getValue().getSharePrice().getLastUpdate());
-
     }
 
+    /**
+     * Called by the login controller, to retrieve the User's details and present it on the tree table
+     * @param token The JWT token provided by the RESTFul Service
+     */
     public void setUpScene(String token) {
         this.accessToken = token;
 
