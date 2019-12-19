@@ -9,10 +9,12 @@ import de.jensd.fx.glyphs.fontawesome.FontAwesomeIconView;
 import javafx.application.Platform;
 import javafx.concurrent.Task;
 import javafx.fxml.FXML;
+import javafx.scene.control.Tab;
 import javafx.scene.control.TextField;
 import javafx.scene.control.TreeItem;
 import javafx.scene.control.TreeTableColumn;
 import javafx.scene.layout.Pane;
+import javafx.scene.layout.StackPane;
 import javafx.scene.text.Text;
 import ntu.n0696066.model.Shares;
 import ntu.n0696066.model.User;
@@ -20,14 +22,18 @@ import okhttp3.*;
 
 import java.io.IOException;
 import java.time.LocalDate;
-import java.util.ArrayList;
-import java.util.Iterator;
-import java.util.Objects;
+import java.util.*;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
 public class MainController {
 
+    @FXML
+    private StackPane stackPane_Stocks;
+    @FXML
+    private JFXTabPane tabPane_Main;
+    @FXML
+    private Tab tab_Dashboard, tab_Stocks;
     @FXML
     private Pane pane_PurchaseShares, pane_SelectItem, pane_StockDetails, pane_SellShares;
     @FXML
@@ -137,6 +143,19 @@ public class MainController {
                         Shares tempShare = new ObjectMapper().readValue(
                                 Objects.requireNonNull(response.body()).string(),
                                 Shares.class);
+                        Platform.runLater(() -> {
+                            lbl_CompanySymbol.setText(tempShare.getCompanySymbol().getValue());
+                            lbl_CompanyName.setText(tempShare.getCompanyName().getValue());
+                            lbl_ShareCurrency.setText(tempShare.getSharePrice().getCurrency().toString());
+                            lbl_ShareValue.setText(tempShare.getSharePrice().getValue().getValue().toString());
+                            lbl_ShareUpdate.setText(tempShare.getSharePrice().getLastUpdate().getValue().toString());
+                            lbl_OwnedShares.setText(tempShare.getOwnedShares().toString());
+                            lbl_Equity.setText(String.valueOf(tempShare.getOwnedShares().get()
+                                            * tempShare.getSharePrice().getValue().getValue()));
+                            if (tempShare.getOwnedShares().getValue() <= 0) btn_GotoSell.setDisable(true);
+                            tabPane_Main.getSelectionModel().select(tab_Stocks);
+                            pane_StockDetails.toFront();
+                        });
 
 
                     }

@@ -223,6 +223,7 @@ public class LoginController {
             LoginRequest tempUser = new LoginRequest();
             tempUser.setUsername(txtUsername.getText());
             tempUser.setPassword(txtPassword.getText());
+            spin_Loading.setVisible(true);
 
             // Delete post call to separate thread
             Task<Void> task = new Task<Void>() {
@@ -245,6 +246,7 @@ public class LoginController {
                         Platform.runLater(() -> {
                             // Bad Credentials
                             if (response.code() == 401) {
+                                spin_Loading.setVisible(false);
                                 txtUsername.setText("");
                                 txtPassword.setText("");
                                 DialogHandler.handleInfo(txtLoginInfo,
@@ -273,6 +275,7 @@ public class LoginController {
                                         window.show();
                                     });
                                     tempFade.play();
+                                    spin_Loading.setVisible(false);
                                     window.close();
 
                                 } catch (IOException e) {
