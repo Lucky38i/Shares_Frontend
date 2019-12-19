@@ -276,7 +276,6 @@ public class LoginController {
                                     });
                                     tempFade.play();
                                     spin_Loading.setVisible(false);
-                                    window.close();
 
                                 } catch (IOException e) {
                                     e.printStackTrace();

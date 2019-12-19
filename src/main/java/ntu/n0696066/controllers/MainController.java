@@ -8,6 +8,7 @@ import com.jfoenix.controls.datamodels.treetable.RecursiveTreeObject;
 import de.jensd.fx.glyphs.fontawesome.FontAwesomeIconView;
 import javafx.application.Platform;
 import javafx.concurrent.Task;
+import javafx.event.ActionEvent;
 import javafx.fxml.FXML;
 import javafx.scene.control.Tab;
 import javafx.scene.control.TextField;
@@ -119,7 +120,7 @@ public class MainController {
      * buy and in what currency.
      */
     @FXML
-    private void editNewStock() {
+    private void editNewStock(ActionEvent actionEvent) {
         String shareSymbol = cmb_SearchShare.getValue().split("-")[1];
         progressBar_Loading.setVisible(true);
         Task<Void> task = new Task<Void>() {

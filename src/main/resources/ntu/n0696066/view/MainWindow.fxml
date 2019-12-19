@@ -42,7 +42,7 @@
                      </font>
                   </Text>
                   <Separator prefWidth="135.0" visible="false" />
-                  <JFXComboBox fx:id="cmb_SearchShare" editable="true" prefWidth="200.0" promptText="Search Shares" styleClass="jfx-text-field" stylesheets="@../css/stylesheet.css" />
+                  <JFXComboBox fx:id="cmb_SearchShare" editable="true" onAction="#editNewStock" prefWidth="200.0" promptText="Search Shares" styleClass="jfx-text-field" stylesheets="@../css/stylesheet.css" />
                   <FontAwesomeIconView fill="#ed0362" glyphName="SEARCH" onMouseClicked="#searchShares" size="14" />
                </children>
             </HBox>
