@@ -22,7 +22,7 @@
 <?import javafx.scene.text.Font?>
 <?import javafx.scene.text.Text?>
 
-<StackPane maxHeight="-Infinity" maxWidth="-Infinity" minHeight="-Infinity" minWidth="-Infinity" prefHeight="400.0" prefWidth="673.0" stylesheets="@../css/stylesheet.css" xmlns="http://javafx.com/javafx/8.0.171" xmlns:fx="http://javafx.com/fxml/1" fx:controller="ntu.n0696066.controllers.MainController">
+<StackPane fx:id="stackPane_Root" maxHeight="-Infinity" maxWidth="-Infinity" minHeight="-Infinity" minWidth="-Infinity" prefHeight="400.0" prefWidth="673.0" stylesheets="@../css/stylesheet.css" xmlns="http://javafx.com/javafx/8.0.171" xmlns:fx="http://javafx.com/fxml/1" fx:controller="ntu.n0696066.controllers.MainController">
    <children>
       <VBox alignment="CENTER" prefHeight="200.0" prefWidth="100.0" spacing="5.0">
          <children>
@@ -42,8 +42,9 @@
                      </font>
                   </Text>
                   <Separator prefWidth="135.0" visible="false" />
-                  <JFXComboBox fx:id="cmb_SearchShare" editable="true" onAction="#editNewStock" prefWidth="200.0" promptText="Search Shares" styleClass="jfx-text-field" stylesheets="@../css/stylesheet.css" />
-                  <FontAwesomeIconView fill="#ed0362" glyphName="SEARCH" onMouseClicked="#searchShares" size="14" />
+                  <JFXTextField fx:id="txt_SearchStock" promptText="Search Stocks" />
+                  <FontAwesomeIconView fill="#ed0362" glyphName="SEARCH" onMouseClicked="#searchStock" size="14" />
+                  <JFXComboBox fx:id="cmb_SearchShare" onAction="#retrieveStock" prefWidth="200.0" promptText="Select a Result" styleClass="jfx-text-field" stylesheets="@../css/stylesheet.css" />
                </children>
             </HBox>
             <JFXTabPane fx:id="tabPane_Main" side="LEFT" stylesheets="@../css/stylesheet.css" VBox.vgrow="ALWAYS">
@@ -215,6 +216,19 @@
                                           </VBox>
                                        </children>
                                     </Pane>
+                                    <Pane fx:id="pane_SelectItem" styleClass="VBox_Root" stylesheets="@../css/stylesheet.css">
+                                       <children>
+                                          <VBox alignment="CENTER" prefHeight="306.0" prefWidth="573.0">
+                                             <children>
+                                                <Text strokeType="OUTSIDE" strokeWidth="0.0" text="Please select a Stock Item from the dashboard" wrappingWidth="520.999994635582">
+                                                   <font>
+                                                      <Font name="Roboto Bold" size="22.0" />
+                                                   </font>
+                                                </Text>
+                                             </children>
+                                          </VBox>
+                                       </children>
+                                    </Pane>
                                     <Pane fx:id="pane_StockDetails" styleClass="VBox_Root" stylesheets="@../css/stylesheet.css">
                                        <children>
                                           <VBox alignment="CENTER_LEFT" maxHeight="-Infinity" maxWidth="-Infinity" prefHeight="306.0" prefWidth="571.0">
@@ -237,9 +251,9 @@
                                                 </Text>
                                                 <HBox alignment="CENTER_LEFT" prefWidth="200.0">
                                                    <children>
-                                                      <Text fx:id="lbl_ShareCurrency" strokeType="OUTSIDE" strokeWidth="0.0" text="\$" wrappingWidth="30.99999463558197">
+                                                      <Text fx:id="lbl_ShareCurrency" strokeType="OUTSIDE" strokeWidth="0.0" text="USD" wrappingWidth="42.99999463558197">
                                                          <font>
-                                                            <Font name="Roboto Bold" size="30.0" />
+                                                            <Font name="Roboto Bold" size="15.0" />
                                                          </font>
                                                          <HBox.margin>
                                                             <Insets left="20.0" />
@@ -304,19 +318,6 @@
                                              <padding>
                                                 <Insets bottom="10.0" left="10.0" top="10.0" />
                                              </padding>
-                                          </VBox>
-                                       </children>
-                                    </Pane>
-                                    <Pane fx:id="pane_SelectItem" styleClass="VBox_Root" stylesheets="@../css/stylesheet.css">
-                                       <children>
-                                          <VBox alignment="CENTER" prefHeight="306.0" prefWidth="573.0">
-                                             <children>
-                                                <Text strokeType="OUTSIDE" strokeWidth="0.0" text="Please select a Stock Item from the dashboard" wrappingWidth="520.999994635582">
-                                                   <font>
-                                                      <Font name="Roboto Bold" size="22.0" />
-                                                   </font>
-                                                </Text>
-                                             </children>
                                           </VBox>
                                        </children>
                                     </Pane>

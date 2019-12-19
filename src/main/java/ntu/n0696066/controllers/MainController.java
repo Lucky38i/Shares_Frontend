@@ -1,36 +1,41 @@
 package ntu.n0696066.controllers;
 
+import com.fasterxml.jackson.core.JsonProcessingException;
+import com.fasterxml.jackson.databind.JsonMappingException;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
-import com.fasterxml.jackson.databind.node.ObjectNode;
+import com.fasterxml.jackson.databind.json.JsonMapper;
+import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule;
 import com.jfoenix.controls.*;
 import com.jfoenix.controls.datamodels.treetable.RecursiveTreeObject;
-import de.jensd.fx.glyphs.fontawesome.FontAwesomeIconView;
 import javafx.application.Platform;
 import javafx.concurrent.Task;
-import javafx.event.ActionEvent;
 import javafx.fxml.FXML;
 import javafx.scene.control.Tab;
-import javafx.scene.control.TextField;
 import javafx.scene.control.TreeItem;
 import javafx.scene.control.TreeTableColumn;
 import javafx.scene.layout.Pane;
 import javafx.scene.layout.StackPane;
 import javafx.scene.text.Text;
+import javafx.stage.Modality;
+import javafx.stage.Stage;
 import ntu.n0696066.model.Shares;
+import ntu.n0696066.model.SharesRecursive;
 import ntu.n0696066.model.User;
-import okhttp3.*;
+import okhttp3.Call;
+import okhttp3.OkHttpClient;
+import okhttp3.Request;
+import okhttp3.Response;
 
 import java.io.IOException;
-import java.time.LocalDate;
-import java.util.*;
+import java.util.Objects;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
 public class MainController {
 
     @FXML
-    private StackPane stackPane_Stocks;
+    private StackPane stackPane_Stocks, stackPane_Root;
     @FXML
     private JFXTabPane tabPane_Main;
     @FXML
@@ -46,32 +51,39 @@ public class MainController {
     private JFXComboBox<String> cmb_Sell_Currency, cmb_Buy_Currency;
     @FXML
     private JFXTextField txt_Sell_SharePrice, txt_Sell_SharesLeft, txt_Sell_NumofShares, txt_Buy_SharePrice,
-            txt_Buy_Equity, txt_Buy_NumofShare;
+            txt_Buy_Equity, txt_Buy_NumofShare, txt_SearchStock;
     @FXML
     private JFXProgressBar progressBar_Loading;
     @FXML
     private JFXComboBox<String> cmb_SearchShare;
     @FXML
-    private TreeTableColumn<Shares, String> clm_CompanyName,  clm_CompanySymbol;
+    private TreeTableColumn<SharesRecursive, String> clm_CompanyName,  clm_CompanySymbol;
     @FXML
-    private TreeTableColumn<Shares, Long> clm_OwnedShares;
+    private TreeTableColumn<SharesRecursive, Long> clm_OwnedShares;
     @FXML
-    private JFXTreeTableView<Shares> treeTblView_Dashboard;
+    private JFXTreeTableView<SharesRecursive> treeTblView_Dashboard;
+    private JFXAlert<String> alertDialog;
+    private JFXDialogLayout dialogContent;
 
     private String accessToken;
     private final OkHttpClient client = new OkHttpClient();
     private final String BASE_URL = "http://localhost:8080/api";
     private final String RED_STATUS_CSS = "../css/statusred.css";
     private final String GREEN_STATUS_CSS = "../css/statusgreen.css";
+    ObjectMapper mapper;
 
 
     @FXML
     public void initialize() {
         Logger.getLogger(OkHttpClient.class.getName()).setLevel(Level.FINE);
         // Setup Share columns
-        clm_CompanyName.setCellValueFactory(param -> param.getValue().getValue().getCompanyName());
-        clm_CompanySymbol.setCellValueFactory(param -> param.getValue().getValue().getCompanySymbol());
-        clm_OwnedShares.setCellValueFactory(param -> param.getValue().getValue().getOwnedShares().asObject());
+        clm_CompanyName.setCellValueFactory(param -> param.getValue().getValue().companyNameProperty());
+        clm_CompanySymbol.setCellValueFactory(param -> param.getValue().getValue().companySymbolProperty());
+        clm_OwnedShares.setCellValueFactory(param -> param.getValue().getValue().ownedSharesProperty().asObject());
+
+        mapper = JsonMapper.builder()
+                .addModule(new JavaTimeModule())
+                .build();
     }
 
     /**
@@ -80,6 +92,16 @@ public class MainController {
      */
     public void setUpScene(String token) {
         this.accessToken = token;
+
+        alertDialog = new JFXAlert<>((Stage) stackPane_Root.getScene().getWindow());
+        alertDialog.initModality(Modality.APPLICATION_MODAL);
+        alertDialog.setOverlayClose(false);
+
+        dialogContent = new JFXDialogLayout();
+        JFXButton dialogButton = new JFXButton("Okay");
+        dialogButton.setOnAction(event -> alertDialog.hideWithAnimation());
+        dialogContent.setActions(dialogButton);
+        alertDialog.setContent(dialogContent);
 
         // Delegate Rest Call to a separate thread
         Task<Void> task = new Task<Void>() {
@@ -94,12 +116,25 @@ public class MainController {
                 try (Response response = call.execute()){
                     User tempUser = new User();
                     if (response.code() == 200) {
-                        new ObjectMapper().readValue(Objects.requireNonNull(response.body()).string(),
+                        mapper.readValue(Objects.requireNonNull(response.body()).string(),
                                 tempUser.getClass());
 
+                        /*
+                         * Adds all owned shares to the RecursiveTreeObject copy of the Shares model
+                         * This is done as Jackson cannot de-serialize into ObservableLists while still
+                         * being able to build the TreeTableView
+                         */
+                        for (Shares i : tempUser.getOwnedShares()) {
+                            SharesRecursive tempRecursiveShare = new SharesRecursive();
+                            tempRecursiveShare.setCompanyName(i.getCompanyName());
+                            tempRecursiveShare.setCompanySymbol(i.getCompanySymbol());
+                            tempRecursiveShare.setOwnedShares(i.getOwnedShares());
+                            tempUser.getSharesRecursivesList().add(tempRecursiveShare);
+                        }
+
                         Platform.runLater(() -> {
-                            final TreeItem<Shares> root = new RecursiveTreeItem<>(
-                                    tempUser.getOwnedShares(), RecursiveTreeObject::getChildren);
+                            final TreeItem<SharesRecursive> root = new RecursiveTreeItem<>(
+                                    tempUser.getSharesRecursivesList(), RecursiveTreeObject::getChildren);
                             treeTblView_Dashboard.setRoot(root);
                             treeTblView_Dashboard.setShowRoot(false);
                         });
@@ -116,57 +151,73 @@ public class MainController {
     }
 
     /**
-     * Used to edit a newly request stock item after searching. User can then set the amount of shares they want to
-     * buy and in what currency.
+     * Used to retrieve stock item from RESTFul WS
      */
     @FXML
-    private void editNewStock(ActionEvent actionEvent) {
-        String shareSymbol = cmb_SearchShare.getValue().split("-")[1];
-        progressBar_Loading.setVisible(true);
-        Task<Void> task = new Task<Void>() {
-            @Override
-            protected Void call() throws Exception {
-                Request request = new Request.Builder()
-                        .url(BASE_URL + "/shares/retrievestock?sharesymbol=" + shareSymbol)
-                        .addHeader("Authorization", "Bearer " + accessToken)
-                        .build();
-                Call call = client.newCall(request);
-                try(Response response = call.execute()) {
-                    if (response.code() == 408) {
-                        //TODO create dialog for this
-                        System.out.println("Request Timeout");
+    private void retrieveStock() {
+        if (cmb_SearchShare.getValue() != null) {
+            String shareSymbol = cmb_SearchShare.getValue().split("-")[0];
+            progressBar_Loading.setVisible(true);
+            Task<Void> task = new Task<Void>() {
+                @Override
+                protected Void call() throws Exception {
+                    Request request = new Request.Builder()
+                            .url(BASE_URL + "/shares/retrievestock?sharesymbol=" + shareSymbol)
+                            .addHeader("Authorization", "Bearer " + accessToken)
+                            .build();
+                    Call call = client.newCall(request);
+                    try (Response response = call.execute()) {
+                        switch (response.code()) {
+                            case 408:   // REQUEST_TIMEOUT
+                                progressBar_Loading.setVisible(false);
+                                dialogContent.setBody(new Text("Request Timed Out"));
+                                Platform.runLater(() -> alertDialog.showAndWait());
+                                break;
+                            case 406:   //NOT_ACCEPTABLE
+                                progressBar_Loading.setVisible(false);
+                                dialogContent.setBody(new Text("Malformed Share Symbol"));
+                                Platform.runLater(() -> alertDialog.showAndWait());
+                                break;
+                            case 429: //TOO_MANY_REQUESTS
+                                progressBar_Loading.setVisible(false);
+                                dialogContent.setBody(new Text("API Limit Reached"));
+                                Platform.runLater(() -> alertDialog.showAndWait());
+                                break;
+                            case 200:   //OK
+                                Shares tempShare = mapper.readValue(
+                                        Objects.requireNonNull(response.body()).string(),
+                                        Shares.class);
+                                Platform.runLater(() -> {
+                                    // Populate Stock Details Fields
+                                    progressBar_Loading.setVisible(false);
+                                    lbl_CompanySymbol.setText(tempShare.getCompanySymbol());
+                                    lbl_CompanyName.setText(tempShare.getCompanyName());
+                                    lbl_ShareCurrency.setText(tempShare.getStock().getCurrency());
+                                    lbl_ShareValue.setText(tempShare.getStock().getValue().toString());
+                                    lbl_ShareUpdate.setText("Updated: "
+                                            + tempShare.getStock().getLastUpdate().toString());
+                                    lbl_OwnedShares.setText(tempShare.getOwnedShares().toString());
+                                    lbl_Equity.setText(String.valueOf(tempShare.getOwnedShares()
+                                            * tempShare.getStock().getValue()));
+                                    //Check if the User owns shares in this stock
+                                    if (tempShare.getOwnedShares() <= 0) btn_GotoSell.setDisable(true);
 
-                    } else if (response.code() == 406) {
-                        //TODO create dialog for this
-                        System.out.println("Malformed Share Symbol");
+                                    // Switch tabs and pane and combo box
+                                    tabPane_Main.getSelectionModel().select(tab_Stocks);
+                                    pane_StockDetails.toFront();
+                                });
+                                break;
+                        }
+                    } catch (JsonProcessingException e) {
+                        e.printStackTrace();
                     }
-                    else if (response.code() == 200) {
-                        Shares tempShare = new ObjectMapper().readValue(
-                                Objects.requireNonNull(response.body()).string(),
-                                Shares.class);
-                        Platform.runLater(() -> {
-                            lbl_CompanySymbol.setText(tempShare.getCompanySymbol().getValue());
-                            lbl_CompanyName.setText(tempShare.getCompanyName().getValue());
-                            lbl_ShareCurrency.setText(tempShare.getSharePrice().getCurrency().toString());
-                            lbl_ShareValue.setText(tempShare.getSharePrice().getValue().getValue().toString());
-                            lbl_ShareUpdate.setText(tempShare.getSharePrice().getLastUpdate().getValue().toString());
-                            lbl_OwnedShares.setText(tempShare.getOwnedShares().toString());
-                            lbl_Equity.setText(String.valueOf(tempShare.getOwnedShares().get()
-                                            * tempShare.getSharePrice().getValue().getValue()));
-                            if (tempShare.getOwnedShares().getValue() <= 0) btn_GotoSell.setDisable(true);
-                            tabPane_Main.getSelectionModel().select(tab_Stocks);
-                            pane_StockDetails.toFront();
-                        });
-
-
-                    }
+                    return null;
                 }
-                return null;
-            }
-        };
-        Thread thread = new Thread(task);
-        thread.setDaemon(true);
-        thread.start();
+            };
+            Thread thread = new Thread(task);
+            thread.setDaemon(true);
+            thread.start();
+        }
 
     }
 
@@ -175,21 +226,21 @@ public class MainController {
      * Eg. "Amazon" Retrieves a list of stocks with amazon in the company name
      */
     @FXML
-    private void searchShares() {
-        if (cmb_SearchShare.getEditor().getLength() >= 3) {
+    private void searchStock() {
+        if (txt_SearchStock.getText().length() >= 3) {
             progressBar_Loading.setVisible(true);
             // Build GET call
             Task<Void> task = new Task<Void>() {
                 @Override
                 protected Void call() {
                     Request request = new Request.Builder()
-                            .url(BASE_URL + "/shares/liststock?sharesymbol=" + cmb_SearchShare.getEditor().getText())
+                            .url(BASE_URL + "/shares/liststock?sharesymbol=" + txt_SearchStock.getText())
                             .addHeader("Authorization", "Bearer " + accessToken)
                             .build();
                     Call call = client.newCall(request);
 
                     try (Response response = call.execute()){
-                        JsonNode responseNode = new ObjectMapper().readTree(
+                        JsonNode responseNode = mapper.readTree(
                                 Objects.requireNonNull(response.body()).string());
 
                         Platform.runLater(() -> {
@@ -202,6 +253,7 @@ public class MainController {
                                                 +  responseNode.path("bestMatches").get(i).get("2. name").textValue()
                                 );
                             }
+                            txt_SearchStock.setText("");
                             cmb_SearchShare.show();
                         });
                     } catch (IOException e) {

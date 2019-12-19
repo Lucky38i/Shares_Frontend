@@ -6,6 +6,7 @@ import animatefx.animation.ZoomIn;
 import animatefx.animation.ZoomOut;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.fasterxml.jackson.databind.json.JsonMapper;
 import com.jfoenix.controls.JFXPasswordField;
 import com.jfoenix.controls.JFXSpinner;
 import com.jfoenix.controls.JFXTextField;
@@ -46,6 +47,7 @@ public class LoginController {
     @FXML
     private JFXPasswordField txtPassword, txtRegisterPassword;
 
+    private ObjectMapper mapper;
     private final OkHttpClient client = new OkHttpClient();
     private final String BASE_URL = "http://localhost:8080/api";
     final String RED_STATUS_CSS = "../css/statusred.css";
@@ -54,6 +56,8 @@ public class LoginController {
 
     @FXML
     public void initialize() {
+
+        mapper = JsonMapper.builder().build();
 
         Tooltip passwordTip = new Tooltip("Enter a password");
         txtRegisterPassword.setTooltip(passwordTip);
@@ -131,7 +135,7 @@ public class LoginController {
                 @Override
                 protected Void call() {
                     try {
-                        String node = new ObjectMapper().writeValueAsString(tempUser);
+                        String node = mapper.writeValueAsString(tempUser);
                         RequestBody body = RequestBody.create(node, MediaType.parse("application/json; charset=utf-8"));
 
                         // Build POST call
@@ -141,7 +145,7 @@ public class LoginController {
                                 .build();
                         Call call = client.newCall(request);
                         Response response = call.execute();
-                        JsonNode responseNode = new ObjectMapper().readTree(
+                        JsonNode responseNode = mapper.readTree(
                                 Objects.requireNonNull(response.body()).string());
 
                         Platform.runLater(() -> {
@@ -230,7 +234,7 @@ public class LoginController {
                 @Override
                 protected Void call() {
                     try {
-                        String node = new ObjectMapper().writeValueAsString(tempUser);
+                        String node = mapper.writeValueAsString(tempUser);
                         RequestBody body = RequestBody.create(node, MediaType.parse("application/json; charset=utf-8"));
 
                         // Build POST call
@@ -240,7 +244,7 @@ public class LoginController {
                                 .build();
                         Call call = client.newCall(request);
                         Response response = call.execute();
-                        JsonNode responseNode = new ObjectMapper().readTree(
+                        JsonNode responseNode = mapper.readTree(
                                 Objects.requireNonNull(response.body()).string());
 
                         Platform.runLater(() -> {
