@@ -22,12 +22,10 @@ import javafx.stage.Stage;
 import ntu.n0696066.model.Shares;
 import ntu.n0696066.model.SharesRecursive;
 import ntu.n0696066.model.User;
-import okhttp3.Call;
-import okhttp3.OkHttpClient;
-import okhttp3.Request;
-import okhttp3.Response;
+import okhttp3.*;
 
 import java.io.IOException;
+import java.text.DecimalFormat;
 import java.util.Objects;
 import java.util.logging.Level;
 import java.util.logging.Logger;
@@ -67,10 +65,28 @@ public class MainController {
 
     private String accessToken;
     private final OkHttpClient client = new OkHttpClient();
-    private final String BASE_URL = "http://localhost:8080/api";
+    private final String BASE_URL = "http://localhost:8080/api/";
     private final String RED_STATUS_CSS = "../css/statusred.css";
     private final String GREEN_STATUS_CSS = "../css/statusgreen.css";
     ObjectMapper mapper;
+    private Shares tempShare;
+    private User tempUser;
+
+    /*
+     * Adds all owned shares to the RecursiveTreeObject copy of the Shares model
+     * This is done as Jackson cannot de-serialize into ObservableLists while still
+     * being able to build the TreeTableView
+     */
+    private void copyShareToRecursiveTreeShare() {
+
+        for (Shares i : tempUser.getOwnedShares()) {
+            SharesRecursive tempRecursiveShare = new SharesRecursive();
+            tempRecursiveShare.setCompanyName(i.getCompanyName());
+            tempRecursiveShare.setCompanySymbol(i.getCompanySymbol());
+            tempRecursiveShare.setOwnedShares(i.getOwnedShares());
+            tempUser.getSharesRecursivesList().add(tempRecursiveShare);
+        }
+    }
 
 
     @FXML
@@ -84,6 +100,20 @@ public class MainController {
         mapper = JsonMapper.builder()
                 .addModule(new JavaTimeModule())
                 .build();
+
+        txt_Buy_NumofShare.textProperty().addListener(((observable, oldValue, newValue) -> {
+            boolean parseable = false;
+            Float marketPrice = tempShare.getStock().getValue();
+            int numOfShares = 0;
+            try {
+                numOfShares = Integer.parseInt(newValue);
+                parseable = true;
+            } catch (NumberFormatException ignored) {}
+            if (parseable) {
+                int finalNumOfShares = numOfShares;
+                Platform.runLater(() -> txt_Buy_Equity.setText(String.valueOf(marketPrice * finalNumOfShares)));
+            }
+        }));
     }
 
     /**
@@ -114,23 +144,11 @@ public class MainController {
                         .build();
                 Call call = client.newCall(request);
                 try (Response response = call.execute()){
-                    User tempUser = new User();
                     if (response.code() == 200) {
-                        mapper.readValue(Objects.requireNonNull(response.body()).string(),
-                                tempUser.getClass());
+                        tempUser = mapper.readValue(Objects.requireNonNull(response.body()).string(),
+                                User.class);
 
-                        /*
-                         * Adds all owned shares to the RecursiveTreeObject copy of the Shares model
-                         * This is done as Jackson cannot de-serialize into ObservableLists while still
-                         * being able to build the TreeTableView
-                         */
-                        for (Shares i : tempUser.getOwnedShares()) {
-                            SharesRecursive tempRecursiveShare = new SharesRecursive();
-                            tempRecursiveShare.setCompanyName(i.getCompanyName());
-                            tempRecursiveShare.setCompanySymbol(i.getCompanySymbol());
-                            tempRecursiveShare.setOwnedShares(i.getOwnedShares());
-                            tempUser.getSharesRecursivesList().add(tempRecursiveShare);
-                        }
+                        copyShareToRecursiveTreeShare();
 
                         Platform.runLater(() -> {
                             final TreeItem<SharesRecursive> root = new RecursiveTreeItem<>(
@@ -150,6 +168,65 @@ public class MainController {
         thread.start();
     }
 
+    @FXML void returnToStockDetails() {
+        Platform.runLater(() -> pane_StockDetails.toFront());
+    }
+
+    @FXML
+    private void gotoBuy() {
+        DecimalFormat formatter = new DecimalFormat();
+        formatter.setMaximumFractionDigits(2);
+        pane_PurchaseShares.toFront();
+        txt_Buy_SharePrice.setText(formatter.format(tempShare.getStock().getValue()));
+        cmb_Buy_Currency.setPromptText(tempShare.getStock().getCurrency());
+        lbl_Buy_CompanySym.setText("Buy " + tempShare.getCompanySymbol());
+    }
+
+    @FXML
+    private void buyShares() {
+        try {
+            progressBar_Loading.setVisible(true);
+            if (Integer.parseInt(txt_Buy_NumofShare.getText()) > 0) {
+                tempShare.setOwnedShares(Long.parseLong(txt_Buy_NumofShare.getText()));
+                Task<Void> task = new Task<Void>() {
+                    @Override
+                    protected Void call() throws Exception {
+                        String node = mapper.writeValueAsString(tempShare);
+                        RequestBody body = RequestBody.create(node, MediaType.parse("application/json; charset=utf-8"));
+
+                        Request request = new Request.Builder()
+                                .url(BASE_URL + "shares/purchaseshare")
+                                .addHeader("Authorization", "Bearer " + accessToken)
+                                .post(body)
+                                .build();
+                        Call call = client.newCall(request);
+                        try (Response response = call.execute()) {
+                            tempUser = mapper.readValue(Objects.requireNonNull(response.body()).string(), User.class);
+                            copyShareToRecursiveTreeShare();
+                            Platform.runLater(() -> {
+                                progressBar_Loading.setVisible(false);
+                                final TreeItem<SharesRecursive> root = new RecursiveTreeItem<>(
+                                        tempUser.getSharesRecursivesList(), RecursiveTreeObject::getChildren);
+                                treeTblView_Dashboard.setRoot(root);
+                                treeTblView_Dashboard.setShowRoot(false);
+                            });
+                            tabPane_Main.getSelectionModel().select(tab_Dashboard);
+                            pane_StockDetails.toFront();
+                        }
+                        return null;
+                    }
+                };
+                Thread thread = new Thread(task);
+                thread.setDaemon(true);
+                thread.start();
+            }
+        } catch (NumberFormatException e) {
+            // TODO print this in a dialog
+            System.out.println("Malformed Number");
+        }
+
+    }
+
     /**
      * Used to retrieve stock item from RESTFul WS
      */
@@ -162,7 +239,7 @@ public class MainController {
                 @Override
                 protected Void call() throws Exception {
                     Request request = new Request.Builder()
-                            .url(BASE_URL + "/shares/retrievestock?sharesymbol=" + shareSymbol)
+                            .url(BASE_URL + "shares/retrievestock?sharesymbol=" + shareSymbol)
                             .addHeader("Authorization", "Bearer " + accessToken)
                             .build();
                     Call call = client.newCall(request);
@@ -184,7 +261,7 @@ public class MainController {
                                 Platform.runLater(() -> alertDialog.showAndWait());
                                 break;
                             case 200:   //OK
-                                Shares tempShare = mapper.readValue(
+                                tempShare = mapper.readValue(
                                         Objects.requireNonNull(response.body()).string(),
                                         Shares.class);
                                 Platform.runLater(() -> {
@@ -234,7 +311,7 @@ public class MainController {
                 @Override
                 protected Void call() {
                     Request request = new Request.Builder()
-                            .url(BASE_URL + "/shares/liststock?sharesymbol=" + txt_SearchStock.getText())
+                            .url(BASE_URL + "shares/liststock?sharesymbol=" + txt_SearchStock.getText())
                             .addHeader("Authorization", "Bearer " + accessToken)
                             .build();
                     Call call = client.newCall(request);

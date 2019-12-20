@@ -2,6 +2,8 @@ package ntu.n0696066.model;
 
 import com.jfoenix.controls.datamodels.treetable.RecursiveTreeObject;
 import javafx.beans.property.LongProperty;
+import javafx.beans.property.SimpleLongProperty;
+import javafx.beans.property.SimpleStringProperty;
 import javafx.beans.property.StringProperty;
 
 public class SharesRecursive extends RecursiveTreeObject<SharesRecursive> {
@@ -9,7 +11,11 @@ public class SharesRecursive extends RecursiveTreeObject<SharesRecursive> {
     private StringProperty companySymbol;
     private LongProperty ownedShares;
 
-    public SharesRecursive() {};
+    public SharesRecursive() {
+        companyName = new SimpleStringProperty();
+        companySymbol = new SimpleStringProperty();
+        ownedShares = new SimpleLongProperty();
+    };
 
     public long getOwnedShares() {
         return ownedShares.get();
