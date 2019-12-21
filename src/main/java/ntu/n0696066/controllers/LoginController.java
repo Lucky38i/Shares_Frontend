@@ -4,6 +4,8 @@ import animatefx.animation.FadeIn;
 import animatefx.animation.FadeOut;
 import animatefx.animation.ZoomIn;
 import animatefx.animation.ZoomOut;
+import com.fasterxml.jackson.core.JsonProcessingException;
+import com.fasterxml.jackson.databind.JsonMappingException;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.json.JsonMapper;
@@ -31,6 +33,8 @@ import okhttp3.*;
 
 import java.io.IOException;
 import java.util.Objects;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
 
 public class LoginController {
 
@@ -53,11 +57,13 @@ public class LoginController {
     final String RED_STATUS_CSS = "../css/statusred.css";
     final String GREEN_STATUS_CSS = "../css/statusgreen.css";
     final String MAIN_WINDOW = "../view/MainWindow.fxml";
+    private ExecutorService executor;
 
     @FXML
     public void initialize() {
 
         mapper = JsonMapper.builder().build();
+        executor = Executors.newCachedThreadPool();
 
         Tooltip passwordTip = new Tooltip("Enter a password");
         txtRegisterPassword.setTooltip(passwordTip);
@@ -133,72 +139,66 @@ public class LoginController {
             // Delegate Rest Call to a separate thread
             Task<Void> task = new Task<Void>() {
                 @Override
-                protected Void call() {
-                    try {
-                        String node = mapper.writeValueAsString(tempUser);
-                        RequestBody body = RequestBody.create(node, MediaType.parse("application/json; charset=utf-8"));
+                protected Void call() throws JsonProcessingException {
+                    String node = mapper.writeValueAsString(tempUser);
+                    RequestBody body = RequestBody.create(node, MediaType.parse("application/json; charset=utf-8"));
 
-                        // Build POST call
-                        Request request = new Request.Builder()
-                                .url(BASE_URL + "/auth/register")
-                                .post(body)
-                                .build();
-                        Call call = client.newCall(request);
-                        Response response = call.execute();
-                        JsonNode responseNode = mapper.readTree(
-                                Objects.requireNonNull(response.body()).string());
-
-                        Platform.runLater(() -> {
-                            // Inform user successful user registration and return to login screen
-                            if (responseNode.get("success").booleanValue()) {
-                                txtRegisterInfo.getStylesheets().clear();
-                                txtRegisterInfo.getStylesheets().add(String.valueOf(
-                                        LoginController.class.getResource(GREEN_STATUS_CSS)));
-                                txtRegisterInfo.setText(responseNode.get("message").textValue());
-
-                                FadeIn tempFade = new FadeIn(txtRegisterInfo);
-                                tempFade.setOnFinished(enterEvent -> {
-                                    txtRegisterUsername.setText("");
-                                    txtRegisterPassword.setText("");
-
-                                    ZoomOut tempAnimation = new ZoomOut(paneRegister);
-                                    tempAnimation.setOnFinished(exitEvent -> {
-                                        paneLogin.toFront();
-                                        txtRegisterInfo.setMaxHeight(0);
-                                    });
-                                    tempAnimation.setDelay(Duration.seconds(2));
-                                    tempAnimation.play();
-                                });
-                                tempFade.play();
-                                txtRegisterInfo.setMaxHeight(txtRegisterInfo.getPrefHeight());
-                            }
-                            // Inform failure to register user and print message from RESTful WS
-                            else {
-                                DialogHandler.handleInfo(txtLoginInfo,
-                                        RED_STATUS_CSS,
-                                        responseNode.get("message").textValue(),
-                                        3);
-                            }
-                            spin_Loading.setVisible(false);
-                        });
+                    // Build POST call
+                    Request request = new Request.Builder()
+                            .url(BASE_URL + "/auth/register")
+                            .post(body)
+                            .build();
+                    Call call = client.newCall(request);
+                    try (Response response = call.execute()) {
+                        updateMessage(Objects.requireNonNull(response.body()).string());
                     } catch (IOException e) {
-                        // Inform user that server is down
-                        Platform.runLater(() -> {
-                            DialogHandler.handleInfo(txtRegisterInfo,
-                                    RED_STATUS_CSS,
-                                    "Server down, try again later",
-                                    3);
-                            txtRegisterUsername.setText("");
-                            txtRegisterPassword.setText("");
-                            spin_Loading.setVisible(false);
-                        });
+                        updateMessage("Server down, try again later");
                     }
                     return null;
                 }
             };
-            Thread thread = new Thread(task);
-            thread.setDaemon(true);
-            thread.start();
+            task.setOnSucceeded(event -> {
+                JsonNode responseNode;
+                try {
+                    responseNode = mapper.readTree(task.getMessage());
+                    if (responseNode.get("success").booleanValue()) {
+                        txtRegisterInfo.getStylesheets().clear();
+                        txtRegisterInfo.getStylesheets().add(String.valueOf(
+                                LoginController.class.getResource(GREEN_STATUS_CSS)));
+                    }
+
+                    JsonNode finalResponseNode = responseNode;
+                    Platform.runLater(() -> {
+                        // Inform user successful user registration and return to login screen
+                        txtRegisterInfo.setText(finalResponseNode.get("message").textValue());
+
+                        FadeIn tempFade = new FadeIn(txtRegisterInfo);
+                        tempFade.setOnFinished(enterEvent -> {
+                            txtRegisterUsername.setText("");
+                            txtRegisterPassword.setText("");
+
+                            ZoomOut tempAnimation = new ZoomOut(paneRegister);
+                            tempAnimation.setOnFinished(exitEvent -> {
+                                paneLogin.toFront();
+                                txtRegisterInfo.setMaxHeight(0);
+                            });
+                            tempAnimation.setDelay(Duration.seconds(2));
+                            tempAnimation.play();
+                        });
+                        tempFade.play();
+                        txtRegisterInfo.setMaxHeight(txtRegisterInfo.getPrefHeight());
+                        });
+                } catch (JsonProcessingException e) {
+                    e.printStackTrace();
+                }
+            });
+            task.setOnFailed(event -> Platform.runLater(() -> {
+                DialogHandler.handleInfo(txtRegisterInfo, RED_STATUS_CSS, task.getMessage(), 3);
+                txtRegisterUsername.setText("");
+                txtRegisterPassword.setText("");
+                spin_Loading.setVisible(false);
+            }));
+            executor.execute(task);
         }
     }
 
@@ -229,27 +229,35 @@ public class LoginController {
             tempUser.setPassword(txtPassword.getText());
             spin_Loading.setVisible(true);
 
-            // Delete post call to separate thread
-            Task<Void> task = new Task<Void>() {
+            Task<Integer> task = new Task<Integer>() {
                 @Override
-                protected Void call() {
-                    try {
-                        String node = mapper.writeValueAsString(tempUser);
-                        RequestBody body = RequestBody.create(node, MediaType.parse("application/json; charset=utf-8"));
+                protected Integer call() throws JsonProcessingException {
+                    Integer responseCode = null;
+                    String node = mapper.writeValueAsString(tempUser);
+                    RequestBody body = RequestBody.create(node, MediaType.parse("application/json; charset=utf-8"));
 
-                        // Build POST call
-                        Request request = new Request.Builder()
-                                .url(BASE_URL + "/auth/login")
-                                .post(body)
-                                .build();
-                        Call call = client.newCall(request);
-                        Response response = call.execute();
-                        JsonNode responseNode = mapper.readTree(
-                                Objects.requireNonNull(response.body()).string());
-
-                        Platform.runLater(() -> {
-                            // Bad Credentials
-                            if (response.code() == 401) {
+                    // Build POST call
+                    Request request = new Request.Builder()
+                            .url(BASE_URL + "/auth/login")
+                            .post(body)
+                            .build();
+                    Call call = client.newCall(request);
+                    try (Response response = call.execute();) {
+                        responseCode = response.code();
+                        updateMessage(Objects.requireNonNull(response.body()).string());
+                    } catch (IOException e ) {
+                        updateMessage("Server down, try again later");
+                    }
+                    return responseCode;
+                }
+            };
+            task.setOnSucceeded(event -> {
+                try {
+                    JsonNode responseNode = mapper.readTree(task.getMessage());
+                    Platform.runLater(() -> {
+                        // Bad Credentials
+                        switch (task.getValue()) {
+                            case 401:
                                 spin_Loading.setVisible(false);
                                 txtUsername.setText("");
                                 txtPassword.setText("");
@@ -257,8 +265,8 @@ public class LoginController {
                                         RED_STATUS_CSS,
                                         responseNode.get("message").textValue(),
                                         3);
-                            }
-                            else if (response.code() == 200) {
+                                break;
+                            case 200:
                                 try {
                                     // Successful Login
                                     FXMLLoader loader = new FXMLLoader();
@@ -284,24 +292,23 @@ public class LoginController {
                                 } catch (IOException e) {
                                     e.printStackTrace();
                                 }
-                            }
-                        });
-
-                    } catch (IOException e ) {
-                        DialogHandler.handleInfo(txtLoginInfo,
-                                "../css/statusred.css",
-                                "Server down, try again later",
-                                3);
-                        txtRegisterUsername.setText("");
-                        txtRegisterPassword.setText("");
-                        spin_Loading.setVisible(false);
-                    }
-                    return null;
+                                break;
+                        }
+                    });
+                } catch (JsonProcessingException e) {
+                    e.printStackTrace();
                 }
-            };
-            Thread thread = new Thread(task);
-            thread.setDaemon(true);
-            thread.start();
+            });
+            task.setOnFailed(event -> Platform.runLater(() -> {
+                DialogHandler.handleInfo(txtLoginInfo,
+                        "../css/statusred.css",
+                        task.getMessage(),
+                        3);
+                txtRegisterUsername.setText("");
+                txtRegisterPassword.setText("");
+                spin_Loading.setVisible(false);
+            }));
+            executor.execute(task);
         }
     }
 }

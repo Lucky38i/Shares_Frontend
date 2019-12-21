@@ -92,3 +92,14 @@
     -fx-pref-width: 300;
     -fx-max-width: Infinity;
 }
+.jfx-slider > .colored-track {
+    -fx-background-color: #ED0362;
+}
+
+.jfx-slider > .animated-thumb {
+    -fx-background-color: #ED0362;
+
+}
+.jfx-slider > .thumb {
+    -fx-background-color: #ED0362;
+}

@@ -26,6 +26,5 @@ public class DialogHandler {
         tempFade.setOnFinished(exitEvent -> infoDialog.setMaxHeight(0));
         tempFade.setDelay(Duration.seconds(fadeOutDelayInSecs));
         tempFade.play();
-
     }
 }

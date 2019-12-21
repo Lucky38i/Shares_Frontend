@@ -1,7 +1,6 @@
 package ntu.n0696066.controllers;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
-import com.fasterxml.jackson.databind.JsonMappingException;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.json.JsonMapper;
@@ -27,11 +26,16 @@ import okhttp3.*;
 import java.io.IOException;
 import java.text.DecimalFormat;
 import java.util.Objects;
+import java.util.concurrent.Executor;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
 public class MainController {
 
+    @FXML
+    private JFXSlider slider_Sell_NumOfShares;
     @FXML
     private StackPane stackPane_Stocks, stackPane_Root;
     @FXML
@@ -63,7 +67,7 @@ public class MainController {
     private JFXAlert<String> alertDialog;
     private JFXDialogLayout dialogContent;
 
-    private String accessToken;
+    private String accessToken, classJSON;
     private final OkHttpClient client = new OkHttpClient();
     private final String BASE_URL = "http://localhost:8080/api/";
     private final String RED_STATUS_CSS = "../css/statusred.css";
@@ -71,6 +75,9 @@ public class MainController {
     ObjectMapper mapper;
     private Shares tempShare;
     private User tempUser;
+    DecimalFormat formatter = new DecimalFormat();
+    ExecutorService executor;
+
 
     /*
      * Adds all owned shares to the RecursiveTreeObject copy of the Shares model
@@ -97,9 +104,11 @@ public class MainController {
         clm_CompanySymbol.setCellValueFactory(param -> param.getValue().getValue().companySymbolProperty());
         clm_OwnedShares.setCellValueFactory(param -> param.getValue().getValue().ownedSharesProperty().asObject());
 
+        formatter.setMaximumFractionDigits(2);
         mapper = JsonMapper.builder()
                 .addModule(new JavaTimeModule())
                 .build();
+        executor = Executors.newCachedThreadPool();
 
         txt_Buy_NumofShare.textProperty().addListener(((observable, oldValue, newValue) -> {
             boolean parseable = false;
@@ -168,32 +177,86 @@ public class MainController {
         thread.start();
     }
 
+    /**
+     * Returns to the stock details pane
+     * //TODO Introduce Animations
+     */
     @FXML void returnToStockDetails() {
-        Platform.runLater(() -> pane_StockDetails.toFront());
+        pane_StockDetails.toFront();
     }
 
+    /**
+     * Switch Pane to Buy Pane
+     * //TODO Introduce Animations
+     */
     @FXML
     private void gotoBuy() {
-        DecimalFormat formatter = new DecimalFormat();
-        formatter.setMaximumFractionDigits(2);
         pane_PurchaseShares.toFront();
         txt_Buy_SharePrice.setText(formatter.format(tempShare.getStock().getValue()));
         cmb_Buy_Currency.setPromptText(tempShare.getStock().getCurrency());
         lbl_Buy_CompanySym.setText("Buy " + tempShare.getCompanySymbol());
     }
 
+    /**
+     * Switch pane to Sell Pane
+     * //TODO Introduce Animations
+     */
+    @FXML
+    private void goToSell() {
+        pane_SellShares.toFront();
+        slider_Sell_NumOfShares.setMax(Double.valueOf(tempShare.getOwnedShares()));
+        lbl_Sell_CompanySym.setText("Sell " + tempShare.getCompanyName());
+        txt_Sell_SharePrice.setText(tempShare.getStock().getValue().toString());
+        cmb_Sell_Currency.setPromptText(tempShare.getStock().getCurrency());
+    }
+
+    /**
+     * Sell shares in a selected stock
+     * //TODO Finish this
+     */
+    @FXML
+    private void sellShares() {
+        progressBar_Loading.setVisible(true);
+        if (slider_Sell_NumOfShares.getValue() > 0) {
+            tempShare.setOwnedShares((long) (tempShare.getOwnedShares() - slider_Sell_NumOfShares.getValue()));
+            Task<Void> task = new Task<Void>() {
+                @Override
+                protected Void call() throws Exception {
+                    classJSON = mapper.writeValueAsString(tempShare);
+                    RequestBody body = RequestBody.create(classJSON, MediaType.parse("application/json; charset=utf-8"));
+
+                    Request request = new Request.Builder()
+                            .url(BASE_URL + "shares/purchaseshare")
+                            .addHeader("Authorization", "Bearer " + accessToken)
+                            .post(body)
+                            .build();
+                    Call call = client.newCall(request);
+                    //TODO
+                    try (Response response = call.execute()) {
+
+                    }
+                    return null;
+                }
+            };
+            executor.execute(task);
+        }
+    }
+
+    /**
+     * Buy shares in the specified Stock
+     */
     @FXML
     private void buyShares() {
         try {
             progressBar_Loading.setVisible(true);
             if (Integer.parseInt(txt_Buy_NumofShare.getText()) > 0) {
                 tempShare.setOwnedShares(Long.parseLong(txt_Buy_NumofShare.getText()));
+
                 Task<Void> task = new Task<Void>() {
                     @Override
                     protected Void call() throws Exception {
-                        String node = mapper.writeValueAsString(tempShare);
-                        RequestBody body = RequestBody.create(node, MediaType.parse("application/json; charset=utf-8"));
-
+                        classJSON = mapper.writeValueAsString(tempShare);
+                        RequestBody body = RequestBody.create(classJSON, MediaType.parse("application/json; charset=utf-8"));
                         Request request = new Request.Builder()
                                 .url(BASE_URL + "shares/purchaseshare")
                                 .addHeader("Authorization", "Bearer " + accessToken)
@@ -201,24 +264,30 @@ public class MainController {
                                 .build();
                         Call call = client.newCall(request);
                         try (Response response = call.execute()) {
-                            tempUser = mapper.readValue(Objects.requireNonNull(response.body()).string(), User.class);
-                            copyShareToRecursiveTreeShare();
-                            Platform.runLater(() -> {
-                                progressBar_Loading.setVisible(false);
-                                final TreeItem<SharesRecursive> root = new RecursiveTreeItem<>(
-                                        tempUser.getSharesRecursivesList(), RecursiveTreeObject::getChildren);
-                                treeTblView_Dashboard.setRoot(root);
-                                treeTblView_Dashboard.setShowRoot(false);
-                            });
-                            tabPane_Main.getSelectionModel().select(tab_Dashboard);
-                            pane_StockDetails.toFront();
+                            updateMessage(Objects.requireNonNull(response.body()).string());
                         }
                         return null;
                     }
                 };
-                Thread thread = new Thread(task);
-                thread.setDaemon(true);
-                thread.start();
+
+                task.setOnSucceeded(event -> {
+                    try {
+                        tempUser = mapper.readValue(task.getMessage(), User.class);
+                    } catch (JsonProcessingException e) {
+                        e.printStackTrace();
+                    }
+                    copyShareToRecursiveTreeShare();
+                    Platform.runLater(() -> {
+                        progressBar_Loading.setVisible(false);
+                        final TreeItem<SharesRecursive> root = new RecursiveTreeItem<>(
+                                tempUser.getSharesRecursivesList(), RecursiveTreeObject::getChildren);
+                        treeTblView_Dashboard.setRoot(root);
+                        treeTblView_Dashboard.setShowRoot(false);
+                        tabPane_Main.getSelectionModel().select(tab_Dashboard);
+                        pane_StockDetails.toFront();
+                    });
+                });
+                executor.execute(task);
             }
         } catch (NumberFormatException e) {
             // TODO print this in a dialog
@@ -235,67 +304,70 @@ public class MainController {
         if (cmb_SearchShare.getValue() != null) {
             String shareSymbol = cmb_SearchShare.getValue().split("-")[0];
             progressBar_Loading.setVisible(true);
-            Task<Void> task = new Task<Void>() {
+            Task<Integer> task = new Task<Integer>() {
                 @Override
-                protected Void call() throws Exception {
+                protected Integer call() throws Exception {
+                    int code;
                     Request request = new Request.Builder()
                             .url(BASE_URL + "shares/retrievestock?sharesymbol=" + shareSymbol)
                             .addHeader("Authorization", "Bearer " + accessToken)
                             .build();
                     Call call = client.newCall(request);
                     try (Response response = call.execute()) {
-                        switch (response.code()) {
-                            case 408:   // REQUEST_TIMEOUT
-                                progressBar_Loading.setVisible(false);
-                                dialogContent.setBody(new Text("Request Timed Out"));
-                                Platform.runLater(() -> alertDialog.showAndWait());
-                                break;
-                            case 406:   //NOT_ACCEPTABLE
-                                progressBar_Loading.setVisible(false);
-                                dialogContent.setBody(new Text("Malformed Share Symbol"));
-                                Platform.runLater(() -> alertDialog.showAndWait());
-                                break;
-                            case 429: //TOO_MANY_REQUESTS
-                                progressBar_Loading.setVisible(false);
-                                dialogContent.setBody(new Text("API Limit Reached"));
-                                Platform.runLater(() -> alertDialog.showAndWait());
-                                break;
-                            case 200:   //OK
-                                tempShare = mapper.readValue(
-                                        Objects.requireNonNull(response.body()).string(),
-                                        Shares.class);
-                                Platform.runLater(() -> {
-                                    // Populate Stock Details Fields
-                                    progressBar_Loading.setVisible(false);
-                                    lbl_CompanySymbol.setText(tempShare.getCompanySymbol());
-                                    lbl_CompanyName.setText(tempShare.getCompanyName());
-                                    lbl_ShareCurrency.setText(tempShare.getStock().getCurrency());
-                                    lbl_ShareValue.setText(tempShare.getStock().getValue().toString());
-                                    lbl_ShareUpdate.setText("Updated: "
-                                            + tempShare.getStock().getLastUpdate().toString());
-                                    lbl_OwnedShares.setText(tempShare.getOwnedShares().toString());
-                                    lbl_Equity.setText(String.valueOf(tempShare.getOwnedShares()
-                                            * tempShare.getStock().getValue()));
-                                    //Check if the User owns shares in this stock
-                                    if (tempShare.getOwnedShares() <= 0) btn_GotoSell.setDisable(true);
-
-                                    // Switch tabs and pane and combo box
-                                    tabPane_Main.getSelectionModel().select(tab_Stocks);
-                                    pane_StockDetails.toFront();
-                                });
-                                break;
-                        }
-                    } catch (JsonProcessingException e) {
-                        e.printStackTrace();
+                        updateMessage(Objects.requireNonNull(response.body()).string());
+                        code = response.code();
                     }
-                    return null;
+                    return code;
                 }
             };
-            Thread thread = new Thread(task);
-            thread.setDaemon(true);
-            thread.start();
-        }
+            task.setOnSucceeded(event -> {
+                switch (task.getValue()) {
+                    case 408:   // REQUEST_TIMEOUT
+                        progressBar_Loading.setVisible(false);
+                        dialogContent.setBody(new Text("Request Timed Out"));
+                        Platform.runLater(() -> alertDialog.showAndWait());
+                        break;
+                    case 406:   //NOT_ACCEPTABLE
+                        progressBar_Loading.setVisible(false);
+                        dialogContent.setBody(new Text("Malformed Share Symbol"));
+                        Platform.runLater(() -> alertDialog.showAndWait());
+                        break;
+                    case 429: //TOO_MANY_REQUESTS
+                        progressBar_Loading.setVisible(false);
+                        dialogContent.setBody(new Text("API Limit Reached"));
+                        Platform.runLater(() -> alertDialog.showAndWait());
+                        break;
+                    case 200:   //OK
+                        try {
+                            tempShare = mapper.readValue(task.getMessage(), Shares.class);
+                        }
+                         catch (JsonProcessingException e) {
+                            e.printStackTrace();
+                        }
+                        Platform.runLater(() -> {
+                            // Populate Stock Details Fields
+                            progressBar_Loading.setVisible(false);
+                            lbl_CompanySymbol.setText(tempShare.getCompanySymbol());
+                            lbl_CompanyName.setText(tempShare.getCompanyName());
+                            lbl_ShareCurrency.setText(tempShare.getStock().getCurrency());
+                            lbl_ShareValue.setText(tempShare.getStock().getValue().toString());
+                            lbl_ShareUpdate.setText("Updated: "
+                                    + tempShare.getStock().getLastUpdate().toString());
+                            lbl_OwnedShares.setText(tempShare.getOwnedShares().toString());
+                            lbl_Equity.setText(String.valueOf(tempShare.getOwnedShares()
+                                    * tempShare.getStock().getValue()));
+                            //Check if the User owns shares in this stock
+                            if (tempShare.getOwnedShares() <= 0) btn_GotoSell.setDisable(true);
 
+                            // Switch tabs and pane and combo box
+                            tabPane_Main.getSelectionModel().select(tab_Stocks);
+                            pane_StockDetails.toFront();
+                        });
+                        break;
+                }
+            });
+            executor.execute(task);
+        }
     }
 
     /**
@@ -306,7 +378,7 @@ public class MainController {
     private void searchStock() {
         if (txt_SearchStock.getText().length() >= 3) {
             progressBar_Loading.setVisible(true);
-            // Build GET call
+
             Task<Void> task = new Task<Void>() {
                 @Override
                 protected Void call() {
@@ -317,31 +389,36 @@ public class MainController {
                     Call call = client.newCall(request);
 
                     try (Response response = call.execute()){
-                        JsonNode responseNode = mapper.readTree(
-                                Objects.requireNonNull(response.body()).string());
-
-                        Platform.runLater(() -> {
-                            progressBar_Loading.setVisible(false);
-                            cmb_SearchShare.getItems().clear();
-                            for (int i = 0; i < responseNode.path("bestMatches").size(); i++) {
-                                cmb_SearchShare.getItems().add(
-                                        responseNode.path("bestMatches").get(i).get("1. symbol").textValue()
-                                                + " - "
-                                                +  responseNode.path("bestMatches").get(i).get("2. name").textValue()
-                                );
-                            }
-                            txt_SearchStock.setText("");
-                            cmb_SearchShare.show();
-                        });
+                        updateMessage(Objects.requireNonNull(response.body()).string());
                     } catch (IOException e) {
                         e.printStackTrace();
                     }
                     return null;
                 }
             };
-            Thread thread = new Thread(task);
-            thread.setDaemon(true);
-            thread.start();
+            task.setOnSucceeded(event -> {
+                JsonNode responseNode = null;
+                try {
+                    responseNode = mapper.readTree(task.getMessage());
+                } catch (JsonProcessingException e) {
+                    e.printStackTrace();
+                }
+                assert responseNode != null;
+                cmb_SearchShare.getItems().clear();
+                for (int i = 0; i < responseNode.path("bestMatches").size(); i++) {
+                    cmb_SearchShare.getItems().add(
+                            responseNode.path("bestMatches").get(i).get("1. symbol").textValue()
+                                    + " - "
+                                    + responseNode.path("bestMatches").get(i).get("2. name").textValue()
+                    );
+                }
+                Platform.runLater(() -> {
+                            progressBar_Loading.setVisible(false);
+                            txt_SearchStock.setText("");
+                            cmb_SearchShare.show();
+                });
+            });
+            executor.execute(task);
         }
     }
 }
