@@ -1,8 +1,7 @@
 /* ROOT CONTENT */
 
 .root {
-    -fx-background-color:  #ADC0CF;
-    -fx-text-fill: 'Roboto';
+    -fx-background-color:  #ffff;
 }
 
 .VBox_Root {
@@ -14,31 +13,35 @@
 /* BUTTONS */
 
 .button_SignIn {
-    -fx-background-color:#094270;
+    -fx-background-color: #20C894;
     -fx-background-radius: 20;
     -fx-text-fill: #ffffff;
+    -fx-font-family: "Roboto Bold";
+    -fx-font-size: 13px;
 }
 
 .button_SignUp {
-    -fx-text-fill: #094270;
-    -fx-background-color: #ADC0CF;
+    -fx-text-fill: #20C894;
+    -fx-background-color: #ffffff;
     -fx-background-radius: 20;
-    -fx-border-color: #094270;
+    -fx-border-color:#ffffff;
     -fx-border-radius: 20;
+    -fx-font-size: 13px;
+    -fx-font-family: "Roboto Bold";
 }
 
 /* TEXT FIELDS */
 
 .jfx-text-field, .jfx-password-field {
-    -fx-text-inner-color:  #094270;
-    -fx-prompt-text-fill: #094270;
-    -jfx-unfocus-color: #ed0362;
-    -jfx-focus-color: #094270;
+    -fx-text-inner-color:  black;
+    -fx-prompt-text-fill: black;
+    -jfx-unfocus-color: #EEEEEE;
+    -jfx-focus-color: #20C894;
 }
 
 /* TreeTable */
 .jfx-tree-table-view{
-    -fx-border-color:  #ed0362;
+    -fx-border-color:  #20C894;
     -fx-border-radius: 10px;
     -fx-background-radius: 10px;
 }
@@ -52,11 +55,11 @@
 }
 
 .jfx-tab-pane .tab-header-area .tab-selected-line {
-    -fx-background-color: #ED0362;
+    -fx-background-color: #ffffff;
 }
 
 .jfx-tab-pane .tab-header-area .jfx-rippler {
-    -jfx-rippler-fill: #ED0362;
+    -jfx-rippler-fill: #ffffff;
 }
 
 .tab:selected .tab-label {
@@ -64,28 +67,28 @@
 }
 
 .tab:selected {
-    -fx-background-color: #094270;
+    -fx-background-color:  #20C894;
 }
 
 .tab-header-background {
-    -fx-background-color: #ADC0CF;
+    -fx-background-color: #ffffff;
 }
 
 .tab *.tab-label {
     -fx-rotate: 90;
     -fx-font-size: 12px;
     -fx-alignment: CENTER;
-    -fx-text-fill: #094270;
+    -fx-text-fill: black;
 }
 
 .tab {
     -fx-padding: 3em 0.5em 3em 0.5em;
-    -fx-text-fill: #094270;
-    -fx-background-color: #ADC0CF;
+    -fx-text-family: Roboto;
+    -fx-background-color: #ffff;
 }
 
 .jfx-progress-bar > .bar {
-    -fx-background-color: #ED0362;
+    -fx-background-color: #20C894;
 }
 
 .combo-box-popup > .list-view {
@@ -93,13 +96,13 @@
     -fx-max-width: Infinity;
 }
 .jfx-slider > .colored-track {
-    -fx-background-color: #ED0362;
+    -fx-background-color: #20C894;
 }
 
 .jfx-slider > .animated-thumb {
-    -fx-background-color: #ED0362;
+    -fx-background-color: #20C894;
 
 }
 .jfx-slider > .thumb {
-    -fx-background-color: #ED0362;
+    -fx-background-color: #20C894;
 }

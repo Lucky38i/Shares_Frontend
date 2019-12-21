@@ -158,46 +158,48 @@ public class LoginController {
                 }
             };
             task.setOnSucceeded(event -> {
-                JsonNode responseNode;
-                try {
-                    responseNode = mapper.readTree(task.getMessage());
-                    if (responseNode.get("success").booleanValue()) {
-                        txtRegisterInfo.getStylesheets().clear();
-                        txtRegisterInfo.getStylesheets().add(String.valueOf(
-                                LoginController.class.getResource(GREEN_STATUS_CSS)));
-                    }
-
-                    JsonNode finalResponseNode = responseNode;
+                if (task.getMessage().contains("Server"))
+                {
                     Platform.runLater(() -> {
-                        // Inform user successful user registration and return to login screen
-                        txtRegisterInfo.setText(finalResponseNode.get("message").textValue());
+                        DialogHandler.handleInfo(txtRegisterInfo, RED_STATUS_CSS, task.getMessage(), 3);
+                        txtRegisterUsername.setText("");
+                        txtRegisterPassword.setText("");
+                        spin_Loading.setVisible(false);
+                    });
+                }
+                else {
+                    try {
+                        JsonNode responseNode = mapper.readTree(task.getMessage());
+                        if (responseNode.get("success").booleanValue()) {
+                            txtRegisterInfo.getStylesheets().clear();
+                            txtRegisterInfo.getStylesheets().add(String.valueOf(
+                                    LoginController.class.getResource(GREEN_STATUS_CSS)));
+                        }
+                        Platform.runLater(() -> {
+                            // Inform user successful user registration and return to login screen
+                            txtRegisterInfo.setText(responseNode.get("message").textValue());
 
-                        FadeIn tempFade = new FadeIn(txtRegisterInfo);
-                        tempFade.setOnFinished(enterEvent -> {
-                            txtRegisterUsername.setText("");
-                            txtRegisterPassword.setText("");
+                            FadeIn tempFade = new FadeIn(txtRegisterInfo);
+                            tempFade.setOnFinished(enterEvent -> {
+                                txtRegisterUsername.setText("");
+                                txtRegisterPassword.setText("");
 
-                            ZoomOut tempAnimation = new ZoomOut(paneRegister);
-                            tempAnimation.setOnFinished(exitEvent -> {
-                                paneLogin.toFront();
-                                txtRegisterInfo.setMaxHeight(0);
+                                ZoomOut tempAnimation = new ZoomOut(paneRegister);
+                                tempAnimation.setOnFinished(exitEvent -> {
+                                    paneLogin.toFront();
+                                    txtRegisterInfo.setMaxHeight(0);
+                                });
+                                tempAnimation.setDelay(Duration.seconds(2));
+                                tempAnimation.play();
                             });
-                            tempAnimation.setDelay(Duration.seconds(2));
-                            tempAnimation.play();
+                            tempFade.play();
+                            txtRegisterInfo.setMaxHeight(txtRegisterInfo.getPrefHeight());
                         });
-                        tempFade.play();
-                        txtRegisterInfo.setMaxHeight(txtRegisterInfo.getPrefHeight());
-                        });
-                } catch (JsonProcessingException e) {
-                    e.printStackTrace();
+                    } catch (JsonProcessingException e) {
+                        e.printStackTrace();
+                    }
                 }
             });
-            task.setOnFailed(event -> Platform.runLater(() -> {
-                DialogHandler.handleInfo(txtRegisterInfo, RED_STATUS_CSS, task.getMessage(), 3);
-                txtRegisterUsername.setText("");
-                txtRegisterPassword.setText("");
-                spin_Loading.setVisible(false);
-            }));
             executor.execute(task);
         }
     }
@@ -252,62 +254,66 @@ public class LoginController {
                 }
             };
             task.setOnSucceeded(event -> {
-                try {
-                    JsonNode responseNode = mapper.readTree(task.getMessage());
+                if (task.getMessage().contains("Server")) {
                     Platform.runLater(() -> {
-                        // Bad Credentials
-                        switch (task.getValue()) {
-                            case 401:
-                                spin_Loading.setVisible(false);
-                                txtUsername.setText("");
-                                txtPassword.setText("");
-                                DialogHandler.handleInfo(txtLoginInfo,
-                                        RED_STATUS_CSS,
-                                        responseNode.get("message").textValue(),
-                                        3);
-                                break;
-                            case 200:
-                                try {
-                                    // Successful Login
-                                    FXMLLoader loader = new FXMLLoader();
-                                    loader.setLocation(getClass().getResource(MAIN_WINDOW));
-
-                                    Parent parent = loader.load();
-                                    Scene scene = new Scene(parent);
-
-                                    MainController mainController = loader.getController();
-                                    mainController.setUpScene(responseNode.get("accessToken").textValue());
-
-                                    //Find the stage information
-                                    Stage window = (Stage) ((Node) actionEvent.getSource()).getScene().getWindow();
-
-                                    FadeOut tempFade = new FadeOut(stackRoot);
-                                    tempFade.setOnFinished(exitEvent -> {
-                                        window.setScene(scene);
-                                        window.show();
-                                    });
-                                    tempFade.play();
-                                    spin_Loading.setVisible(false);
-
-                                } catch (IOException e) {
-                                    e.printStackTrace();
-                                }
-                                break;
-                        }
+                        DialogHandler.handleInfo(txtLoginInfo,
+                                "../css/statusred.css",
+                                task.getMessage(),
+                                3);
+                        txtRegisterUsername.setText("");
+                        txtRegisterPassword.setText("");
+                        spin_Loading.setVisible(false);
                     });
-                } catch (JsonProcessingException e) {
-                    e.printStackTrace();
+                }
+                else {
+                    try {
+                        JsonNode responseNode = mapper.readTree(task.getMessage());
+                        Platform.runLater(() -> {
+                            // Bad Credentials
+                            switch (task.getValue()) {
+                                case 401:
+                                    spin_Loading.setVisible(false);
+                                    txtUsername.setText("");
+                                    txtPassword.setText("");
+                                    DialogHandler.handleInfo(txtLoginInfo,
+                                            RED_STATUS_CSS,
+                                            responseNode.get("message").textValue(),
+                                            3);
+                                    break;
+                                case 200:
+                                    try {
+                                        // Successful Login
+                                        FXMLLoader loader = new FXMLLoader();
+                                        loader.setLocation(getClass().getResource(MAIN_WINDOW));
+
+                                        Parent parent = loader.load();
+                                        Scene scene = new Scene(parent);
+
+                                        MainController mainController = loader.getController();
+                                        mainController.setUpScene(responseNode.get("accessToken").textValue());
+
+                                        //Find the stage information
+                                        Stage window = (Stage) ((Node) actionEvent.getSource()).getScene().getWindow();
+
+                                        FadeOut tempFade = new FadeOut(stackRoot);
+                                        tempFade.setOnFinished(exitEvent -> {
+                                            window.setScene(scene);
+                                            window.show();
+                                        });
+                                        tempFade.play();
+                                        spin_Loading.setVisible(false);
+
+                                    } catch (IOException e) {
+                                        e.printStackTrace();
+                                    }
+                                    break;
+                            }
+                        });
+                    } catch (JsonProcessingException e) {
+                        e.printStackTrace();
+                    }
                 }
             });
-            task.setOnFailed(event -> Platform.runLater(() -> {
-                DialogHandler.handleInfo(txtLoginInfo,
-                        "../css/statusred.css",
-                        task.getMessage(),
-                        3);
-                txtRegisterUsername.setText("");
-                txtRegisterPassword.setText("");
-                spin_Loading.setVisible(false);
-            }));
             executor.execute(task);
         }
     }

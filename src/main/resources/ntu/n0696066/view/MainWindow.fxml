@@ -34,19 +34,25 @@
                         <Image url="@../icons/stocks_icon.png" />
                      </image>
                      <HBox.margin>
-                        <Insets left="23.0" />
+                        <Insets />
                      </HBox.margin>
                   </ImageView>
-                  <Text fill="#ed0362" strokeType="OUTSIDE" strokeWidth="0.0" text="SBS">
+                  <Text strokeType="OUTSIDE" strokeWidth="0.0" text="SBS">
                      <font>
                         <Font name="System Bold Italic" size="20.0" />
                      </font>
                   </Text>
                   <Separator prefWidth="135.0" visible="false" />
                   <JFXTextField fx:id="txt_SearchStock" promptText="Search Stocks" />
-                  <FontAwesomeIconView fill="#ed0362" glyphName="SEARCH" onMouseClicked="#searchStock" size="14" />
-                  <JFXComboBox fx:id="cmb_SearchShare" onAction="#retrieveStock" prefWidth="200.0" promptText="Select a Result" styleClass="jfx-text-field" stylesheets="@../css/stylesheet.css" />
+                  <FontAwesomeIconView fill="#20c894" glyphName="SEARCH" onMouseClicked="#listStockItems" size="14" />
+                  <JFXComboBox fx:id="cmb_SearchShare" onAction="#setSearchSymbol" prefWidth="200.0" promptText="Select a Result" styleClass="jfx-text-field" stylesheets="@../css/stylesheet.css" />
+                  <Separator prefWidth="100.0" visible="false" />
+                  <FontAwesomeIconView fill="#20c894" glyphName="MINUS_CIRCLE" onMouseClicked="#minimizeWindow" size="20" />
+                  <FontAwesomeIconView fx:id="closeWindow" fill="#20c894" glyphName="TIMES_CIRCLE" onMouseClicked="#closeWindow" size="20" />
                </children>
+               <VBox.margin>
+                  <Insets left="20.0" right="10.0" />
+               </VBox.margin>
             </HBox>
             <JFXTabPane fx:id="tabPane_Main" side="LEFT" stylesheets="@../css/stylesheet.css" VBox.vgrow="ALWAYS">
                <tabs>
@@ -56,7 +62,7 @@
                            <children>
                               <VBox alignment="CENTER_RIGHT" prefHeight="306.0" prefWidth="573.0" spacing="5.0">
                                  <children>
-                                    <Text strokeType="OUTSIDE" strokeWidth="0.0" text="Welcome">
+                                    <Text fx:id="lbl_Welcome" strokeType="OUTSIDE" strokeWidth="0.0">
                                        <font>
                                           <Font name="Roboto Italic" size="16.0" />
                                        </font>
@@ -89,7 +95,7 @@
                                        <children>
                                           <VBox alignment="TOP_CENTER" prefHeight="306.0" prefWidth="573.0">
                                              <children>
-                                                <FontAwesomeIconView glyphName="TIMES" onMouseClicked="#returnToStockDetails" size="20" stroke="WHITE" style="-fx-fill: #094270;">
+                                                <FontAwesomeIconView glyphName="TIMES" onMouseClicked="#returnToStockDetails" size="20" stroke="WHITE" style="-fx-fill: #20C894;">
                                                    <VBox.margin>
                                                       <Insets right="500.0" />
                                                    </VBox.margin>
@@ -129,7 +135,10 @@
                                                             <Font name="Roboto Regular" size="12.0" />
                                                          </font>
                                                       </Text>
-                                                      <JFXTextField fx:id="txt_Buy_SharePrice" alignment="CENTER" disable="true" maxHeight="-Infinity" maxWidth="-Infinity" prefHeight="25.0" prefWidth="133.0" />
+                                                      <JFXTextField fx:id="txt_Buy_SharePrice" alignment="CENTER" disable="true" maxHeight="-Infinity" maxWidth="-Infinity" prefHeight="25.0" prefWidth="133.0">
+                                                         <font>
+                                                            <Font name="Roboto Bold" size="12.0" />
+                                                         </font></JFXTextField>
                                                    </children>
                                                 </HBox>
                                                 <HBox alignment="CENTER" spacing="60.0">
@@ -139,10 +148,73 @@
                                                             <Font name="Roboto Regular" size="12.0" />
                                                          </font>
                                                       </Text>
-                                                      <JFXTextField fx:id="txt_Buy_Equity" alignment="CENTER" disable="true" maxHeight="-Infinity" maxWidth="-Infinity" prefHeight="25.0" prefWidth="133.0" />
+                                                      <JFXTextField fx:id="txt_Buy_Equity" alignment="CENTER" disable="true" maxHeight="-Infinity" maxWidth="-Infinity" prefHeight="25.0" prefWidth="133.0">
+                                                         <font>
+                                                            <Font name="Roboto Bold" size="12.0" />
+                                                         </font></JFXTextField>
                                                    </children>
                                                 </HBox>
                                                 <JFXButton fx:id="btn_Buy_Confirm" onAction="#buyShares" prefHeight="41.0" prefWidth="160.0" styleClass="button_SignIn" stylesheets="@../css/stylesheet.css" text="Confirm">
+                                                   <VBox.margin>
+                                                      <Insets top="40.0" />
+                                                   </VBox.margin>
+                                                </JFXButton>
+                                             </children>
+                                          </VBox>
+                                       </children>
+                                    </Pane>
+                                    <Pane fx:id="pane_SellShares" styleClass="VBox_Root" stylesheets="@../css/stylesheet.css">
+                                       <children>
+                                          <VBox alignment="TOP_CENTER" prefHeight="306.0" prefWidth="573.0">
+                                             <children>
+                                                <FontAwesomeIconView glyphName="TIMES" onMouseClicked="#returnToStockDetails" size="20" stroke="WHITE" style="-fx-fill: #20C894;">
+                                                   <VBox.margin>
+                                                      <Insets right="500.0" />
+                                                   </VBox.margin>
+                                                </FontAwesomeIconView>
+                                                <Text fx:id="lbl_Sell_CompanySym" strokeType="OUTSIDE" strokeWidth="0.0" text="Sell ABC" wrappingWidth="182.99999463558197">
+                                                   <font>
+                                                      <Font name="Roboto Bold" size="22.0" />
+                                                   </font>
+                                                   <VBox.margin>
+                                                      <Insets bottom="40.0" right="330.0" />
+                                                   </VBox.margin>
+                                                </Text>
+                                                <HBox alignment="CENTER" spacing="50.0">
+                                                   <children>
+                                                      <Text strokeType="OUTSIDE" strokeWidth="0.0" text="Number of Shares">
+                                                         <font>
+                                                            <Font name="Roboto Regular" size="12.0" />
+                                                         </font>
+                                                      </Text>
+                                                      <JFXSlider fx:id="slider_Sell_NumOfShares" />
+                                                   </children>
+                                                </HBox>
+                                                <HBox alignment="CENTER" spacing="100.0">
+                                                   <children>
+                                                      <Text strokeType="OUTSIDE" strokeWidth="0.0" text="Currency">
+                                                         <font>
+                                                            <Font name="Roboto Regular" size="12.0" />
+                                                         </font>
+                                                      </Text>
+                                                      <JFXComboBox fx:id="cmb_Sell_Currency" prefHeight="25.0" prefWidth="134.0" styleClass="jfx-text-field" stylesheets="@../css/stylesheet.css" />
+                                                   </children>
+                                                </HBox>
+                                                <HBox alignment="CENTER" spacing="80.0">
+                                                   <children>
+                                                      <Text strokeType="OUTSIDE" strokeWidth="0.0" text="Market Price">
+                                                         <font>
+                                                            <Font name="Roboto Regular" size="12.0" />
+                                                         </font>
+                                                      </Text>
+                                                      <JFXTextField fx:id="txt_Sell_SharePrice" alignment="CENTER" disable="true" maxHeight="-Infinity" maxWidth="-Infinity" prefHeight="25.0" prefWidth="133.0">
+                                                         <font>
+                                                            <Font name="Roboto Regular" size="12.0" />
+                                                         </font></JFXTextField>
+                                                   </children>
+                                                </HBox>
+                                                <HBox alignment="CENTER" spacing="85.0" />
+                                                <JFXButton fx:id="btn_Sell_Confirm" onAction="#sellShares" prefHeight="41.0" prefWidth="160.0" styleClass="button_SignIn" stylesheets="@../css/stylesheet.css" text="Confirm">
                                                    <VBox.margin>
                                                       <Insets top="40.0" />
                                                    </VBox.margin>
@@ -214,13 +286,13 @@
                                                 </HBox>
                                                 <HBox alignment="CENTER" prefWidth="200.0">
                                                    <children>
-                                                      <Text fx:id="lbl_OwnedShares" strokeType="OUTSIDE" strokeWidth="0.0" text="Owned Shares" wrappingWidth="89.99999463558197">
+                                                      <Text fx:id="lbl_OwnedShares" fill="#20c894" strokeType="OUTSIDE" strokeWidth="0.0" text="Owned Shares" wrappingWidth="89.99999463558197">
                                                          <font>
                                                             <Font name="Roboto Bold" size="12.0" />
                                                          </font>
                                                       </Text>
                                                       <Separator prefWidth="200.0" visible="false" />
-                                                      <Text fx:id="lbl_Equity" strokeType="OUTSIDE" strokeWidth="0.0" text="Current Equity" wrappingWidth="89.99999463558197">
+                                                      <Text fx:id="lbl_Equity" fill="#20c894" strokeType="OUTSIDE" strokeWidth="0.0" text="Current Equity" wrappingWidth="89.99999463558197">
                                                          <font>
                                                             <Font name="Roboto Bold" size="12.0" />
                                                          </font>
@@ -232,8 +304,8 @@
                                                 </HBox>
                                                 <HBox alignment="CENTER" maxHeight="-Infinity" minHeight="-Infinity" prefHeight="40.0" prefWidth="200.0" spacing="50.0">
                                                    <children>
-                                                      <JFXButton contentDisplay="CENTER" onAction="#goToSell" prefHeight="40.0" prefWidth="153.0" styleClass="button_SignUp" stylesheets="@../css/stylesheet.css" text="Sell" />
-                                                      <JFXButton onAction="#gotoBuy" prefHeight="40.0" prefWidth="153.0" styleClass="button_SignIn" stylesheets="@../css/stylesheet.css" text="Buy" />
+                                                      <JFXButton fx:id="btn_GotoSell" buttonType="RAISED" contentDisplay="CENTER" onAction="#goToSell" prefHeight="40.0" prefWidth="153.0" styleClass="button_SignUp" stylesheets="@../css/stylesheet.css" text="Sell" />
+                                                      <JFXButton onAction="#goToBuy" prefHeight="40.0" prefWidth="153.0" styleClass="button_SignIn" stylesheets="@../css/stylesheet.css" text="Buy" />
                                                    </children>
                                                 </HBox>
                                              </children>
@@ -247,80 +319,18 @@
                                        <children>
                                           <VBox alignment="CENTER" prefHeight="306.0" prefWidth="573.0">
                                              <children>
-                                                <Text strokeType="OUTSIDE" strokeWidth="0.0" text="Please select a Stock Item from the dashboard" wrappingWidth="520.999994635582">
+                                                <Text strokeType="OUTSIDE" strokeWidth="0.0" text="Please select a Stock Item from the dashboard" textAlignment="CENTER" wrappingWidth="520.999994635582">
                                                    <font>
                                                       <Font name="Roboto Bold" size="22.0" />
                                                    </font>
                                                 </Text>
                                              </children>
                                           </VBox>
-                                          <Pane fx:id="pane_SellShares" styleClass="VBox_Root" stylesheets="@../css/stylesheet.css">
-                                             <children>
-                                                <VBox alignment="TOP_CENTER" prefHeight="306.0" prefWidth="573.0">
-                                                   <children>
-                                                      <FontAwesomeIconView glyphName="TIMES" onMouseClicked="#returnToStockDetails" size="20" stroke="WHITE" style="-fx-fill: #094270;">
-                                                         <VBox.margin>
-                                                            <Insets right="500.0" />
-                                                         </VBox.margin>
-                                                      </FontAwesomeIconView>
-                                                      <Text fx:id="lbl_Sell_CompanySym" strokeType="OUTSIDE" strokeWidth="0.0" text="Sell ABC" wrappingWidth="182.99999463558197">
-                                                         <font>
-                                                            <Font name="Roboto Bold" size="22.0" />
-                                                         </font>
-                                                         <VBox.margin>
-                                                            <Insets bottom="40.0" right="330.0" />
-                                                         </VBox.margin>
-                                                      </Text>
-                                                      <HBox alignment="CENTER" spacing="50.0">
-                                                         <children>
-                                                            <Text strokeType="OUTSIDE" strokeWidth="0.0" text="Number of Shares">
-                                                               <font>
-                                                                  <Font name="Roboto Regular" size="12.0" />
-                                                               </font>
-                                                            </Text>
-                                                            <JFXSlider fx:id="slider_Sell_NumOfShares" />
-                                                         </children>
-                                                      </HBox>
-                                                      <HBox alignment="CENTER" spacing="100.0">
-                                                         <children>
-                                                            <Text strokeType="OUTSIDE" strokeWidth="0.0" text="Currency">
-                                                               <font>
-                                                                  <Font name="Roboto Regular" size="12.0" />
-                                                               </font>
-                                                            </Text>
-                                                            <JFXComboBox fx:id="cmb_Sell_Currency" prefHeight="25.0" prefWidth="134.0" styleClass="jfx-text-field" stylesheets="@../css/stylesheet.css" />
-                                                         </children>
-                                                      </HBox>
-                                                      <HBox alignment="CENTER" spacing="80.0">
-                                                         <children>
-                                                            <Text strokeType="OUTSIDE" strokeWidth="0.0" text="Market Price">
-                                                               <font>
-                                                                  <Font name="Roboto Regular" size="12.0" />
-                                                               </font>
-                                                            </Text>
-                                                            <JFXTextField fx:id="txt_Sell_SharePrice" alignment="CENTER" disable="true" maxHeight="-Infinity" maxWidth="-Infinity" prefHeight="25.0" prefWidth="133.0" />
-                                                         </children>
-                                                      </HBox>
-                                                      <HBox alignment="CENTER" spacing="85.0" />
-                                                      <JFXButton fx:id="btn_Sell_Confirm" onAction="#sellShares" prefHeight="41.0" prefWidth="160.0" styleClass="button_SignIn" stylesheets="@../css/stylesheet.css" text="Confirm">
-                                                         <VBox.margin>
-                                                            <Insets top="40.0" />
-                                                         </VBox.margin>
-                                                      </JFXButton>
-                                                   </children>
-                                                </VBox>
-                                             </children>
-                                          </Pane>
                                        </children>
                                     </Pane>
                                  </children>
                               </StackPane>
                            </children></AnchorPane>
-                    </content>
-                  </Tab>
-                  <Tab text="Settings">
-                    <content>
-                      <AnchorPane minHeight="0.0" minWidth="0.0" prefHeight="180.0" prefWidth="200.0" />
                     </content>
                   </Tab>
                </tabs>
