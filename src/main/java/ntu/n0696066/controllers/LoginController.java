@@ -22,6 +22,7 @@ import javafx.scene.Parent;
 import javafx.scene.Scene;
 import javafx.scene.control.TextArea;
 import javafx.scene.control.Tooltip;
+import javafx.scene.input.MouseEvent;
 import javafx.scene.layout.Pane;
 import javafx.scene.layout.StackPane;
 import javafx.stage.Stage;
@@ -37,23 +38,24 @@ import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 
 public class LoginController {
-
     @FXML
-    private TextArea txtLoginInfo, txtRegisterInfo;
+    private StackPane rootStackPane;
+    @FXML
+    private TextArea txtLoginInfo, txtRegisterInfo, txtSettingsInfo;
     @FXML
     private JFXSpinner spin_Loading;
     @FXML
-    private Pane paneLogin, paneRegister;
+    private Pane paneLogin, paneRegister, paneSettings;
     @FXML
     private StackPane stackRoot;
     @FXML
-    private JFXTextField txtUsername, txtRegisterUsername;
+    private JFXTextField txtUsername, txtRegisterUsername, txtPort, txtIPAddress;
     @FXML
     private JFXPasswordField txtPassword, txtRegisterPassword;
 
     private ObjectMapper mapper;
     private final OkHttpClient client = new OkHttpClient();
-    private final String BASE_URL = "http://localhost:8080/api";
+    private String BASE_URL = "http://localhost:8080/api";
     final String RED_STATUS_CSS = "../css/statusred.css";
     final String GREEN_STATUS_CSS = "../css/statusgreen.css";
     final String MAIN_WINDOW = "../view/MainWindow.fxml";
@@ -61,7 +63,6 @@ public class LoginController {
 
     @FXML
     public void initialize() {
-
         mapper = JsonMapper.builder().build();
         executor = Executors.newCachedThreadPool();
 
@@ -99,7 +100,7 @@ public class LoginController {
 
     @FXML
     private void ReturnToLogin() {
-        ZoomOut tempAnimation = new ZoomOut(paneRegister);
+        ZoomOut tempAnimation = new ZoomOut(rootStackPane.getChildren().get(rootStackPane.getChildren().size()-1));
         tempAnimation.setOnFinished(exitEvent -> paneLogin.toFront());
         tempAnimation.play();
         txtRegisterInfo.setMaxHeight(0);
@@ -109,6 +110,22 @@ public class LoginController {
     private void SwitchToSignUp() {
         new ZoomIn(paneRegister).play();
         paneRegister.toFront();
+    }
+
+    @FXML
+    private void SettingsPane() {
+        System.out.println("I'm being pressed");
+        new ZoomIn(paneSettings).play();
+        paneSettings.toFront();
+    }
+
+    @FXML
+    private void SaveSettings() {
+        BASE_URL = txtIPAddress.getText() + ":" + txtPort + "/api";
+        DialogHandler.handleInfo(txtSettingsInfo,
+                GREEN_STATUS_CSS,
+                "Settings Saved",
+                3);
     }
 
     /**

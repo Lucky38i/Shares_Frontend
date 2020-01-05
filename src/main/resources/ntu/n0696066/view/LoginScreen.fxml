@@ -24,6 +24,7 @@
          <children>
             <HBox alignment="CENTER_RIGHT" spacing="5.0">
                <children>
+                  <FontAwesomeIconView fill="#20c894" glyphName="COG" onMouseClicked="#SettingsPane" size="20" />
                   <JFXSpinner fx:id="spin_Loading" radius="8.0" visible="false" />
                   <Separator prefWidth="200.0" visible="false" HBox.hgrow="ALWAYS" />
                   <FontAwesomeIconView fill="#20c894" glyphName="MINUS_CIRCLE" onMouseClicked="#MinimizeWindow" size="20" />
@@ -52,7 +53,7 @@
                   </Text>
                </children>
             </VBox>
-            <StackPane VBox.vgrow="ALWAYS">
+            <StackPane VBox.vgrow="ALWAYS" fx:id="rootStackPane">
                <children>
                   <Pane fx:id="paneRegister" styleClass="VBox_Root" stylesheets="@../css/stylesheet.css" StackPane.alignment="CENTER">
                      <children>
@@ -101,6 +102,68 @@
                                  <children>
                                     <JFXButton buttonType="RAISED" cache="true" cacheHint="SPEED" onAction="#ReturnToLogin" prefHeight="40.0" prefWidth="110.0" styleClass="button_SignUp" stylesheets="@../css/stylesheet.css" text="Back" HBox.hgrow="ALWAYS" />
                                     <JFXButton buttonType="RAISED" cache="true" cacheHint="SPEED" onAction="#RegisterUser" prefHeight="40.0" prefWidth="110.0" styleClass="button_SignIn" stylesheets="@../css/stylesheet.css" text="Register!" HBox.hgrow="ALWAYS" />
+                                 </children>
+                                 <VBox.margin>
+                                    <Insets left="5.0" right="5.0" />
+                                 </VBox.margin>
+                                 <padding>
+                                    <Insets left="15.0" right="15.0" />
+                                 </padding>
+                              </HBox>
+                           </children>
+                           <padding>
+                              <Insets top="30.0" />
+                           </padding>
+                        </VBox>
+                     </children>
+                  </Pane>
+                  <Pane fx:id="paneSettings" styleClass="VBox_Root" stylesheets="@../css/stylesheet.css">
+                     <children>
+                        <VBox alignment="TOP_CENTER" maxHeight="-Infinity" maxWidth="-Infinity" prefHeight="341.0" prefWidth="300.0">
+                           <children>
+                              <HBox alignment="CENTER_LEFT">
+                                 <children>
+                                    <Text fill="#20c894" strokeType="OUTSIDE" strokeWidth="0.0" text="Settings" textAlignment="CENTER" wrappingWidth="133.13671875">
+                                       <font>
+                                          <Font name="System Bold" size="18.0" />
+                                       </font>
+                                    </Text>
+                                 </children>
+                                 <VBox.margin>
+                                    <Insets top="20.0" />
+                                 </VBox.margin>
+                              </HBox>
+                              <TextArea fx:id="txtSettingsInfo" cache="true" cacheHint="SPEED" editable="false" maxHeight="0.0" minHeight="0.0" prefHeight="27.0" prefWidth="230.0" stylesheets="@../css/statusred.css" text="To be filled">
+                                 <VBox.margin>
+                                    <Insets left="35.0" right="35.0" />
+                                 </VBox.margin>
+                                 <font>
+                                    <Font name="System Bold" size="12.0" />
+                                 </font>
+                              </TextArea>
+                              <JFXTextField fx:id="txtIPAddress" cache="true" cacheHint="SPEED" focusColor="#094270" promptText="http://localhost" styleClass="jfx-text-field" stylesheets="@../css/stylesheet.css" unFocusColor="#ed0362">
+                                 <VBox.margin>
+                                    <Insets bottom="20.0" left="20.0" right="20.0" top="10.0" />
+                                 </VBox.margin>
+                                 <padding>
+                                    <Insets left="15.0" right="15.0" />
+                                 </padding>
+                              </JFXTextField>
+                              <JFXTextField fx:id="txtPort" accessibleText="hello" cache="true" cacheHint="SPEED" focusColor="#094270" promptText="8080" styleClass="jfx-password-field" stylesheets="@../css/stylesheet.css" unFocusColor="#ed0362">
+                                 <VBox.margin>
+                                    <Insets bottom="70.0" left="20.0" right="20.0" />
+                                 </VBox.margin>
+                                 <padding>
+                                    <Insets left="15.0" right="15.0" />
+                                 </padding>
+                                 <tooltip>
+                                    <Tooltip autoHide="true" text="Empty Tooltip" />
+                                 </tooltip>
+                              </JFXTextField>
+                              <HBox alignment="CENTER" spacing="5.0">
+                                 <children>
+                                    <JFXButton buttonType="RAISED" cache="true" cacheHint="SPEED" onAction="#ReturnToLogin" prefHeight="40.0" prefWidth="110.0" styleClass="button_SignUp" stylesheets="@../css/stylesheet.css" text="Back" HBox.hgrow="ALWAYS" />
+                                    <JFXButton buttonType="RAISED" cache="true" cacheHint="SPEED" onAction="#SaveSettings" prefHeight="40.0" prefWidth="110.0" styleClass="button_SignIn" stylesheets="@../css/stylesheet.css" text="Save" HBox.hgrow="ALWAYS" />
                                  </children>
                                  <VBox.margin>
                                     <Insets left="5.0" right="5.0" />
