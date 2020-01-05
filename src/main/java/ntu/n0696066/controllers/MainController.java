@@ -26,7 +26,8 @@ import okhttp3.*;
 
 import java.io.IOException;
 import java.text.DecimalFormat;
-import java.util.Objects;
+import java.text.ParseException;
+import java.util.*;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.logging.Level;
@@ -70,14 +71,12 @@ public class MainController {
     private String accessToken, classJSON;
     private final OkHttpClient client = new OkHttpClient();
     private final String BASE_URL = "http://localhost:8080/api/";
-    private final String RED_STATUS_CSS = "../css/statusred.css";
-    private final String GREEN_STATUS_CSS = "../css/statusgreen.css";
     ObjectMapper mapper;
     private Shares tempShare;
     private User tempUser;
     DecimalFormat formatter = new DecimalFormat();
     ExecutorService executor;
-
+    HashMap currencyRates;
 
     /*
      * Adds all owned shares to the RecursiveTreeObject copy of the Shares model
@@ -104,7 +103,7 @@ public class MainController {
         Task<Integer> task = new Task<Integer>() {
             @Override
             protected Integer call() throws Exception {
-                int responseCode = 0;
+                int responseCode;
                 classJSON = mapper.writeValueAsString(tempShare);
                 RequestBody body = RequestBody.create(classJSON, MediaType.parse("application/json; charset=utf-8"));
 
@@ -144,14 +143,61 @@ public class MainController {
     }
 
     /**
-     * Used to retrieve stock item from RESTful WS
+     * Used to retrieve stock item from RESTful WS as-well as Currency Rates
      * @param shareSymbol The share symbol used to find the stock item
      */
     private void retrieveStock(String shareSymbol) {
         progressBar_Loading.setVisible(true);
-        Task<Integer> task = new Task<Integer>() {
+        Task<Integer> currencyRetrievalTask = new Task<Integer>() {
             @Override
             protected Integer call() throws Exception {
+                int code;
+                Request request = new Request.Builder()
+                        .url(BASE_URL + "currency/currencyrates?base=" + lbl_ShareCurrency.getText())
+                        .build();
+                Call call = client.newCall(request);
+                try (Response response = call.execute()) {
+                    updateMessage(Objects.requireNonNull(response.body()).string());
+                    code = response.code();
+                }
+                assert(code != 0);
+                return code;
+            }
+        };
+        currencyRetrievalTask.setOnSucceeded(event -> {
+            switch (currencyRetrievalTask.getValue()) {
+                case 404: //NOT FOUND
+                    //TODO
+                    System.out.println("404");
+                    break;
+                case 408: //REQUEST TIMEOUT
+                    //TODO
+                    break;
+                case 200: //OK
+                    try {
+                        JsonNode apiResults = mapper.readValue(currencyRetrievalTask.getMessage(), JsonNode.class);
+                        currencyRates = mapper.convertValue(apiResults.get("rates"), HashMap.class);
+                        Platform.runLater(()-> {
+                            cmb_Buy_Currency.getItems().clear();
+                            cmb_Sell_Currency.getItems().clear();
+
+                            @SuppressWarnings("unchecked") //No need for checking as keyset is string
+                            List<String> currencyList = new ArrayList<String>(currencyRates.keySet());
+                            Collections.sort(currencyList);
+
+                            cmb_Sell_Currency.getItems().addAll(currencyList);
+                            cmb_Buy_Currency.getItems().addAll(currencyList);
+                        });
+                    } catch (JsonProcessingException e) {
+                        e.printStackTrace();
+                    }
+                    break;
+            }
+        });
+        Task<Integer> stockRetrievalTask = new Task<Integer>() {
+            @Override
+            protected Integer call() throws Exception {
+
                 int code;
                 Request request = new Request.Builder()
                         .url(BASE_URL + "shares/retrievestock?sharesymbol=" + shareSymbol)
@@ -165,8 +211,8 @@ public class MainController {
                 return code;
             }
         };
-        task.setOnSucceeded(event -> {
-            switch (task.getValue()) {
+        stockRetrievalTask.setOnSucceeded(event -> {
+            switch (stockRetrievalTask.getValue()) {
                 case 408:   // REQUEST_TIMEOUT
                     progressBar_Loading.setVisible(false);
                     dialogContent.setBody(new Text("Request Timed Out"));
@@ -184,7 +230,7 @@ public class MainController {
                     break;
                 case 200:   //OK
                     try {
-                        tempShare = mapper.readValue(task.getMessage(), Shares.class);
+                        tempShare = mapper.readValue(stockRetrievalTask.getMessage(), Shares.class);
                         Platform.runLater(() -> {
                             // Populate Stock Details Fields
                             progressBar_Loading.setVisible(false);
@@ -195,14 +241,15 @@ public class MainController {
                             lbl_ShareUpdate.setText("Updated: "
                                     + tempShare.getStock().getLastUpdate().toString());
                             lbl_OwnedShares.setText(tempShare.getOwnedShares().toString());
-                            lbl_Equity.setText(String.valueOf(tempShare.getOwnedShares()
-                                    * tempShare.getStock().getValue()));
+                            lbl_Equity.setText(String.valueOf(formatter.format(tempShare.getOwnedShares()
+                                    * tempShare.getStock().getValue())));
                             //Check if the User owns shares in this stock
                             if (tempShare.getOwnedShares() <= 0) btn_GotoSell.setDisable(true);
                             else btn_GotoSell.setDisable(false);
 
                             // Switch tabs and pane and combo box
                             tabPane_Main.getSelectionModel().select(tab_Stocks);
+                            executor.execute(currencyRetrievalTask);
                             pane_StockDetails.toFront();
                         });
                     }
@@ -212,7 +259,7 @@ public class MainController {
                     break;
             }
         });
-        executor.execute(task);
+        executor.execute(stockRetrievalTask);
     }
 
     /**
@@ -298,15 +345,24 @@ public class MainController {
 
         txt_Buy_NumofShare.textProperty().addListener(((observable, oldValue, newValue) -> {
             boolean parseable = false;
-            Float marketPrice = tempShare.getStock().getValue();
+            double marketPrice = 0;
             int numOfShares = 0;
+            Double tempRate;
+
+            if (cmb_Buy_Currency.getValue() == null) {
+                tempRate = (Double) currencyRates.get(tempShare.getStock().getCurrency());
+            } else {
+                tempRate = (Double) currencyRates.get(cmb_Buy_Currency.getValue());
+            }
+
             try {
+
+                marketPrice = tempRate * tempShare.getStock().getValue();
                 numOfShares = Integer.parseInt(newValue);
                 parseable = true;
             } catch (NumberFormatException ignored) {}
             if (parseable) {
-                int finalNumOfShares = numOfShares;
-                Platform.runLater(() -> txt_Buy_Equity.setText(String.valueOf(marketPrice * finalNumOfShares)));
+                txt_Buy_Equity.setText(String.valueOf(formatter.format( marketPrice * numOfShares)));
             }
         }));
     }
@@ -321,6 +377,32 @@ public class MainController {
     @FXML
     private void minimizeWindow() {
         ((Stage) stackPane_Root.getScene().getWindow()).setIconified(true);
+    }
+
+    @FXML
+    private void updateBuyPrice() {
+        Double tempRate;
+        if (cmb_Buy_Currency.getValue() == null ) {
+            tempRate = (Double) currencyRates.get(tempShare.getStock().getCurrency());
+        } else tempRate = (Double) currencyRates.get(cmb_Buy_Currency.getValue());
+        Platform.runLater(()-> {
+            txt_Buy_SharePrice.setText(String.valueOf(
+                formatter.format(tempRate * tempShare.getStock().getValue())));
+
+            Double tempSharePrice = tempRate * tempShare.getStock().getValue();
+            Integer tempNomOfShares = Integer.valueOf(txt_Buy_NumofShare.getText());
+            txt_Buy_Equity.setText(String.valueOf(formatter.format(tempSharePrice * tempNomOfShares)));});
+    }
+
+    @FXML
+    private void updateSellPrice() {
+        Double tempRate;
+        if (cmb_Sell_Currency.getValue() == null ) {
+            tempRate = (Double) currencyRates.get(tempShare.getStock().getCurrency());
+        } else tempRate = (Double) currencyRates.get(cmb_Sell_Currency.getValue());
+
+        Platform.runLater(() -> txt_Sell_SharePrice.setText(String.valueOf(
+                formatter.format(tempRate * tempShare.getStock().getValue()))));
     }
 
     /**
