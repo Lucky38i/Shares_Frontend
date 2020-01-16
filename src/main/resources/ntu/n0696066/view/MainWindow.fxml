@@ -42,11 +42,10 @@
                         <Font name="System Bold Italic" size="20.0" />
                      </font>
                   </Text>
-                  <Separator prefWidth="135.0" visible="false" />
-                  <JFXTextField fx:id="txt_SearchStock" promptText="Search Stocks" />
+                  <Separator prefWidth="135.0" visible="false" HBox.hgrow="ALWAYS" />
+                  <JFXTextField fx:id="txt_SearchStock" prefHeight="25.0" prefWidth="200.0" promptText="Search Stocks" />
                   <FontAwesomeIconView fill="#20c894" glyphName="SEARCH" onMouseClicked="#listStockItems" size="14" />
-                  <JFXComboBox fx:id="cmb_SearchShare" onAction="#setSearchSymbol" prefWidth="200.0" promptText="Select a Result" styleClass="jfx-text-field" stylesheets="@../css/stylesheet.css" />
-                  <Separator prefWidth="100.0" visible="false" />
+                  <Separator prefWidth="100.0" visible="false" HBox.hgrow="ALWAYS" />
                   <FontAwesomeIconView fill="#20c894" glyphName="MINUS_CIRCLE" onMouseClicked="#minimizeWindow" size="20" />
                   <FontAwesomeIconView fx:id="closeWindow" fill="#20c894" glyphName="TIMES_CIRCLE" onMouseClicked="#closeWindow" size="20" />
                </children>
@@ -89,21 +88,8 @@
                     <content>
                       <AnchorPane minHeight="0.0" minWidth="0.0" prefHeight="180.0" prefWidth="200.0">
                            <children>
-                              <StackPane fx:id="stackPane_Stocks" prefHeight="306.0" prefWidth="572.0">
+                              <StackPane prefHeight="306.0" prefWidth="572.0">
                                  <children>
-                                    <Pane fx:id="pane_SelectItem" styleClass="VBox_Root" stylesheets="@../css/stylesheet.css">
-                                       <children>
-                                          <VBox alignment="CENTER" prefHeight="306.0" prefWidth="573.0">
-                                             <children>
-                                                <Text strokeType="OUTSIDE" strokeWidth="0.0" text="Please select a Stock Item from the dashboard" textAlignment="CENTER" wrappingWidth="520.999994635582">
-                                                   <font>
-                                                      <Font name="Roboto Bold" size="22.0" />
-                                                   </font>
-                                                </Text>
-                                             </children>
-                                          </VBox>
-                                       </children>
-                                    </Pane>
                                     <Pane fx:id="pane_StockDetails" styleClass="VBox_Root" stylesheets="@../css/stylesheet.css">
                                        <children>
                                           <VBox alignment="CENTER_LEFT" maxHeight="-Infinity" maxWidth="-Infinity" prefHeight="306.0" prefWidth="571.0">
@@ -220,7 +206,7 @@
                                                             <Font name="Roboto Regular" size="12.0" />
                                                          </font>
                                                       </Text>
-                                                      <JFXTextField fx:id="txt_Buy_NumofShare" alignment="CENTER" maxHeight="-Infinity" maxWidth="-Infinity" prefHeight="25.0" prefWidth="133.0" text="0" />
+                                                      <JFXTextField fx:id="txt_Buy_NumOfShare" alignment="CENTER" maxHeight="-Infinity" maxWidth="-Infinity" prefHeight="25.0" prefWidth="133.0" text="0" />
                                                    </children>
                                                 </HBox>
                                                 <HBox alignment="CENTER" spacing="100.0">
@@ -259,7 +245,7 @@
                                                          </font></JFXTextField>
                                                    </children>
                                                 </HBox>
-                                                <JFXButton fx:id="btn_Buy_Confirm" onAction="#buyShares" prefHeight="41.0" prefWidth="160.0" styleClass="button_SignIn" stylesheets="@../css/stylesheet.css" text="Confirm">
+                                                <JFXButton onAction="#buyShares" prefHeight="41.0" prefWidth="160.0" styleClass="button_SignIn" stylesheets="@../css/stylesheet.css" text="Confirm">
                                                    <VBox.margin>
                                                       <Insets top="40.0" />
                                                    </VBox.margin>
@@ -319,7 +305,7 @@
                                                    </children>
                                                 </HBox>
                                                 <HBox alignment="CENTER" spacing="85.0" />
-                                                <JFXButton fx:id="btn_Sell_Confirm" onAction="#sellShares" prefHeight="41.0" prefWidth="160.0" styleClass="button_SignIn" stylesheets="@../css/stylesheet.css" text="Confirm">
+                                                <JFXButton onAction="#sellShares" prefHeight="41.0" prefWidth="160.0" styleClass="button_SignIn" stylesheets="@../css/stylesheet.css" text="Confirm">
                                                    <VBox.margin>
                                                       <Insets top="40.0" />
                                                    </VBox.margin>
@@ -328,10 +314,55 @@
                                           </VBox>
                                        </children>
                                     </Pane>
+                                    <Pane fx:id="pane_SelectItem" styleClass="VBox_Root" stylesheets="@../css/stylesheet.css">
+                                       <children>
+                                          <VBox alignment="CENTER" prefHeight="306.0" prefWidth="573.0">
+                                             <children>
+                                                <Text strokeType="OUTSIDE" strokeWidth="0.0" text="Please select a Stock Item from the dashboard" textAlignment="CENTER" wrappingWidth="520.999994635582">
+                                                   <font>
+                                                      <Font name="Roboto Bold" size="22.0" />
+                                                   </font>
+                                                </Text>
+                                             </children>
+                                          </VBox>
+                                       </children>
+                                    </Pane>
                                  </children>
                               </StackPane>
                            </children></AnchorPane>
                     </content>
+                  </Tab>
+                  <Tab fx:id="tab_Search" text="Search">
+                     <content>
+                        <AnchorPane minHeight="0.0" minWidth="0.0" prefHeight="180.0" prefWidth="415.0">
+                           <children>
+                              <VBox alignment="CENTER_RIGHT" prefHeight="306.0" prefWidth="573.0" spacing="5.0">
+                                 <children>
+                                    <Text  strokeType="OUTSIDE" strokeWidth="0.0">
+                                       <font>
+                                          <Font name="Roboto Italic" size="16.0" />
+                                       </font>
+                                    </Text>
+                                    <JFXTreeTableView fx:id="treeTblView_Search" prefHeight="272.0" prefWidth="477.0" stylesheets="@../css/stylesheet.css">
+                                       <columns>
+                                          <TreeTableColumn fx:id="clm_search_symbol" prefWidth="75.0" text="Symbol" />
+                                          <TreeTableColumn fx:id="clm_search_name" prefWidth="75.0" text="Name" />
+                                          <TreeTableColumn fx:id="clm_search_type" prefWidth="75.0" text="Type" />
+                                          <TreeTableColumn fx:id="clm_search_currency" prefWidth="75.0" text="Currency" />
+                                          <TreeTableColumn fx:id="clm_search_region" prefWidth="75.0" text="Region" />
+                                       </columns>
+                                       <columnResizePolicy>
+                                          <TreeTableView fx:constant="CONSTRAINED_RESIZE_POLICY" />
+                                       </columnResizePolicy>
+                                    </JFXTreeTableView>
+                                 </children>
+                                 <padding>
+                                    <Insets bottom="10.0" left="5.0" right="5.0" />
+                                 </padding>
+                              </VBox>
+                           </children>
+                        </AnchorPane>
+                     </content>
                   </Tab>
                </tabs>
             </JFXTabPane>

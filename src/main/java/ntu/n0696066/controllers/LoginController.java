@@ -114,7 +114,6 @@ public class LoginController {
 
     @FXML
     private void SettingsPane() {
-        System.out.println("I'm being pressed");
         new ZoomIn(paneSettings).play();
         paneSettings.toFront();
     }
@@ -154,9 +153,10 @@ public class LoginController {
             spin_Loading.setVisible(true);
 
             // Delegate Rest Call to a separate thread
-            Task<Void> task = new Task<Void>() {
+            Task<Integer> task = new Task<Integer>() {
                 @Override
-                protected Void call() throws JsonProcessingException {
+                protected Integer call() throws JsonProcessingException {
+                    int returnVal;
                     String node = mapper.writeValueAsString(tempUser);
                     RequestBody body = RequestBody.create(node, MediaType.parse("application/json; charset=utf-8"));
 
@@ -168,53 +168,52 @@ public class LoginController {
                     Call call = client.newCall(request);
                     try (Response response = call.execute()) {
                         updateMessage(Objects.requireNonNull(response.body()).string());
+                        returnVal = response.code();
                     } catch (IOException e) {
+                        returnVal = 408;
                         updateMessage("Server down, try again later");
                     }
-                    return null;
+                    return returnVal;
                 }
             };
             task.setOnSucceeded(event -> {
-                if (task.getMessage().contains("Server"))
-                {
-                    Platform.runLater(() -> {
+                switch (task.getValue()) {
+                    case 400: // BAD REQUEST i.e user exits
+                    case 408: //REQUEST TIMEOUT
                         DialogHandler.handleInfo(txtRegisterInfo, RED_STATUS_CSS, task.getMessage(), 3);
                         txtRegisterUsername.setText("");
                         txtRegisterPassword.setText("");
                         spin_Loading.setVisible(false);
-                    });
-                }
-                else {
-                    try {
-                        JsonNode responseNode = mapper.readTree(task.getMessage());
-                        if (responseNode.get("success").booleanValue()) {
+                        break;
+                    case 201: //CREATED
+                        try {
+                            JsonNode responseNode = mapper.readTree(task.getMessage());
                             txtRegisterInfo.getStylesheets().clear();
                             txtRegisterInfo.getStylesheets().add(String.valueOf(
                                     LoginController.class.getResource(GREEN_STATUS_CSS)));
-                        }
-                        Platform.runLater(() -> {
-                            // Inform user successful user registration and return to login screen
-                            txtRegisterInfo.setText(responseNode.get("message").textValue());
+                            Platform.runLater(() -> {
+                                txtRegisterInfo.setText(responseNode.get("message").textValue());
 
-                            FadeIn tempFade = new FadeIn(txtRegisterInfo);
-                            tempFade.setOnFinished(enterEvent -> {
-                                txtRegisterUsername.setText("");
-                                txtRegisterPassword.setText("");
+                                FadeIn tempFade = new FadeIn(txtRegisterInfo);
+                                tempFade.setOnFinished(enterEvent -> {
+                                    txtRegisterUsername.setText("");
+                                    txtRegisterPassword.setText("");
 
-                                ZoomOut tempAnimation = new ZoomOut(paneRegister);
-                                tempAnimation.setOnFinished(exitEvent -> {
-                                    paneLogin.toFront();
-                                    txtRegisterInfo.setMaxHeight(0);
+                                    ZoomOut tempAnimation = new ZoomOut(paneRegister);
+                                    tempAnimation.setOnFinished(exitEvent -> {
+                                        paneLogin.toFront();
+                                        txtRegisterInfo.setMaxHeight(0);
+                                    });
+                                    tempAnimation.setDelay(Duration.seconds(2));
+                                    tempAnimation.play();
                                 });
-                                tempAnimation.setDelay(Duration.seconds(2));
-                                tempAnimation.play();
+                                tempFade.play();
+                                txtRegisterInfo.setMaxHeight(txtRegisterInfo.getPrefHeight());
                             });
-                            tempFade.play();
-                            txtRegisterInfo.setMaxHeight(txtRegisterInfo.getPrefHeight());
-                        });
-                    } catch (JsonProcessingException e) {
-                        e.printStackTrace();
-                    }
+                        } catch (JsonProcessingException e) {
+                            e.printStackTrace();
+                        }
+                        break;
                 }
             });
             executor.execute(task);
@@ -265,70 +264,60 @@ public class LoginController {
                         responseCode = response.code();
                         updateMessage(Objects.requireNonNull(response.body()).string());
                     } catch (IOException e ) {
+                        responseCode = 408;
                         updateMessage("Server down, try again later");
                     }
                     return responseCode;
                 }
             };
             task.setOnSucceeded(event -> {
-                if (task.getMessage().contains("Server")) {
-                    Platform.runLater(() -> {
-                        DialogHandler.handleInfo(txtLoginInfo,
-                                "../css/statusred.css",
-                                task.getMessage(),
-                                3);
-                        txtRegisterUsername.setText("");
-                        txtRegisterPassword.setText("");
-                        spin_Loading.setVisible(false);
-                    });
-                }
-                else {
-                    try {
-                        JsonNode responseNode = mapper.readTree(task.getMessage());
+                switch (task.getValue()) {
+                    case 408: // REQUEST TIMED OUT i.e server down
+                    case 401: // UNAUTHORIZED i.e bad credentials
                         Platform.runLater(() -> {
-                            // Bad Credentials
-                            switch (task.getValue()) {
-                                case 401:
-                                    spin_Loading.setVisible(false);
-                                    txtUsername.setText("");
-                                    txtPassword.setText("");
-                                    DialogHandler.handleInfo(txtLoginInfo,
-                                            RED_STATUS_CSS,
-                                            responseNode.get("message").textValue(),
-                                            3);
-                                    break;
-                                case 200:
-                                    try {
-                                        // Successful Login
-                                        FXMLLoader loader = new FXMLLoader();
-                                        loader.setLocation(getClass().getResource(MAIN_WINDOW));
-
-                                        Parent parent = loader.load();
-                                        Scene scene = new Scene(parent);
-
-                                        MainController mainController = loader.getController();
-                                        mainController.setUpScene(responseNode.get("accessToken").textValue());
-
-                                        //Find the stage information
-                                        Stage window = (Stage) ((Node) actionEvent.getSource()).getScene().getWindow();
-
-                                        FadeOut tempFade = new FadeOut(stackRoot);
-                                        tempFade.setOnFinished(exitEvent -> {
-                                            window.setScene(scene);
-                                            window.show();
-                                        });
-                                        tempFade.play();
-                                        spin_Loading.setVisible(false);
-
-                                    } catch (IOException e) {
-                                        e.printStackTrace();
-                                    }
-                                    break;
-                            }
+                            DialogHandler.handleInfo(txtLoginInfo,
+                                    "../css/statusred.css",
+                                    task.getMessage(),
+                                    3);
+                            txtRegisterUsername.setText("");
+                            txtRegisterPassword.setText("");
+                            spin_Loading.setVisible(false);
                         });
-                    } catch (JsonProcessingException e) {
-                        e.printStackTrace();
-                    }
+                        break;
+                    case 200: //OK i.e successful login
+                        try {
+                            JsonNode responseNode = mapper.readTree(task.getMessage());
+                            Platform.runLater(() -> {
+                                try {
+                                    // Successful Login
+                                    FXMLLoader loader = new FXMLLoader();
+                                    loader.setLocation(getClass().getResource(MAIN_WINDOW));
+
+                                    Parent parent = loader.load();
+                                    Scene scene = new Scene(parent);
+
+                                    MainController mainController = loader.getController();
+                                    mainController.setUpScene(responseNode.get("accessToken").textValue());
+
+                                    //Find the stage information
+                                    Stage window = (Stage) ((Node) actionEvent.getSource()).getScene().getWindow();
+
+                                    FadeOut tempFade = new FadeOut(stackRoot);
+                                    tempFade.setOnFinished(exitEvent -> {
+                                        window.setScene(scene);
+                                        window.show();
+                                    });
+                                    tempFade.play();
+                                    spin_Loading.setVisible(false);
+
+                                } catch (IOException e) {
+                                    e.printStackTrace();
+                                }
+                            });
+                        } catch (JsonProcessingException e) {
+                            e.printStackTrace();
+                        }
+                        break;
                 }
             });
             executor.execute(task);
