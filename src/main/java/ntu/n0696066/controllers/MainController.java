@@ -12,10 +12,12 @@ import javafx.application.Platform;
 import javafx.collections.FXCollections;
 import javafx.collections.ObservableList;
 import javafx.concurrent.Task;
+import javafx.event.EventHandler;
 import javafx.fxml.FXML;
 import javafx.scene.control.Tab;
 import javafx.scene.control.TreeItem;
 import javafx.scene.control.TreeTableColumn;
+import javafx.scene.input.MouseEvent;
 import javafx.scene.layout.Pane;
 import javafx.scene.layout.StackPane;
 import javafx.scene.text.Text;
@@ -82,6 +84,8 @@ public class MainController {
     ExecutorService executor;
     HashMap currencyRates;
     ObservableList<StocksRecursive> searchResults = FXCollections.observableArrayList();
+    private double xOffset = 0;
+    private double yOffset = 0;
 
     /*
      * Adds all owned shares to the RecursiveTreeObject copy of the Shares model
@@ -332,6 +336,8 @@ public class MainController {
     @FXML
     public void initialize() {
         Logger.getLogger(OkHttpClient.class.getName()).setLevel(Level.FINE);
+
+
         // Setup Share columns
         clm_CompanyName.setCellValueFactory(param -> param.getValue().getValue().companyNameProperty());
         clm_CompanySymbol.setCellValueFactory(param -> param.getValue().getValue().companySymbolProperty());
@@ -351,6 +357,11 @@ public class MainController {
         executor = Executors.newCachedThreadPool();
 
         // Event & Listeners
+        stackPane_Root.setOnMouseDragged(event -> {
+            stackPane_Root.getScene().getWindow().setX(event.getScreenX());
+            stackPane_Root.getScene().getWindow().setY(event.getScreenY());
+        });
+
         treeTblView_Dashboard.setOnMousePressed(event -> {
             if (event.isPrimaryButtonDown() && event.getClickCount() == 2) {
                 retrieveStock(treeTblView_Dashboard.getSelectionModel().getSelectedItem().getValue().getCompanySymbol());

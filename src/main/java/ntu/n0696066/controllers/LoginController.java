@@ -69,6 +69,11 @@ public class LoginController {
         Tooltip passwordTip = new Tooltip("Enter a password");
         txtRegisterPassword.setTooltip(passwordTip);
 
+        stackRoot.setOnMouseDragged(event -> {
+            stackRoot.getScene().getWindow().setX(event.getScreenX());
+            stackRoot.getScene().getWindow().setY(event.getScreenY());
+        });
+
         txtRegisterPassword.setOnKeyTyped(event -> {
             if (txtRegisterPassword.getText().length() < 6) {
                 passwordTip.setText("Your password needs to be more than 6 characters");
